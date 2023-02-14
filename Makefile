@@ -11,7 +11,6 @@ ${EXEC}: ${OBJECTS}
 	${C} ${CFLAGS} ${OBJECTS} $(LINKFLAGS) -o ${EXEC}
 	cp src/vega bin/vega
 	cp src/config.sh bin/config.sh
-	cp -r src/text bin/text 
 
 -include ${DEPENDS}
 

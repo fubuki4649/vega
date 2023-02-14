@@ -16,24 +16,24 @@
 
 hardware() {
 	subtitl "Hardware" 
-	firstentry "MDL" && model $soft
-	entry "CPU" && cpu $soft
-	entry "GPU" && gpu $soft
-	entry "MEM" && mem $soft
-	entry "HDD" && hdd $soft
-	lastentry "RES" && res $soft
+	firstentry "MDL" && model "$soft"
+	entry "CPU" && cpu "$soft"
+	entry "GPU" && gpu "$soft"
+	entry "MEM" && mem "$soft"
+	entry "HDD" && hdd "$soft"
+	lastentry "RES" && res "$soft"
 }
 
 
 software() {
 	subtitl "Software"
-	firstentry "OS " && os $soft
-	entry "KER" && kernel $soft
-	entry "PKG" && packages $soft
-	entry "WMN" && wm $soft
-	entry "TER" && terminal $soft
-	entry "SHL" && shell $soft
-	lastentry "IP4" && ip_local $soft
+	firstentry "OS " && os "$soft"
+	entry "KER" && kernel "$soft"
+	entry "PKG" && packages "$soft"
+	entry "WMN" && wm "$soft"
+	entry "TER" && terminal "$soft"
+	entry "SHL" && shell "$soft"
+	lastentry "IP4" && ip_local "$soft"
 }
 
 

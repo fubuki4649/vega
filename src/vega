@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 #
 # vega - a simpler and faster cli system information tool
 # Copyright (C) 2023 Frank Tao
@@ -16,6 +16,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+vegaver="1.0.0"
+
 # Color variables
 red='\033[0;31m'
 green='\033[0;32m'
@@ -30,83 +32,91 @@ soft='\033[2m'
 reset='\033[0m'
 
 
-# Checks for config file
+# Sets directory env variables
 
 DIR="$(dirname "$(readlink -f "$0")")"
 
-if [[ -e ~/.config/vega/config.sh ]]; then
-    source "~/.config/vega/config.sh"
-else 
-    source "$DIR/config.sh"
+if [ -z "$HOME" ]; then
+    HOME=~/sex
 fi
 
 
-# Formatting Functions
+# Looks for config file
+
+if [ -e $HOME/.config/vega/config.sh ]; then
+    . $HOME/.config/vega/config.sh
+else 
+    . $DIR/config.sh
+fi
+
+
+# Formatting Helper Functions
 
 title() {
-    titlelen=$(echo $(whoami)@$(cat /etc/hostname) | wc -c)
+    titlelen=$(echo "$(whoami)"@"$(cat /etc/hostname)" | wc -c)
     printf "${accent}${bold}$(whoami)${reset}@${accent}${bold}$(cat /etc/hostname)${reset}\n"
     printf "${soft}%${titlelen}s${reset}\n" |tr " " "="
 }
 
 subtitl() {
-    printf "${bold}< $@ >${reset}\n"
+    printf "${bold}< $* >${reset}\n"
 }
 
 firstentry() {
-    printf "${accent}${bold}╔ $@ = ${reset}"
+    printf "${accent}${bold}╔ $* = ${reset}"
 }
 
 entry() {
-    printf "${accent}${bold}╠ $@ = ${reset}"
+    printf "${accent}${bold}╠ $* = ${reset}"
 }
 
 lastentry() {
-    printf "${accent}${bold}╚ $@ = ${reset}"
+    printf "${accent}${bold}╚ $* = ${reset}"
 }
+
 
 # Data-getting functions
 # Hardware
 
 model() {
-    printf "$@$(cat /sys/devices/virtual/dmi/id/product_name)${reset}\n"
+    printf "$*$(cat /sys/devices/virtual/dmi/id/product_name)${reset}\n"
 }
 
 cpu() {
     corecount=$(($(cat /proc/cpuinfo | grep 'processor' | awk -F ': ' '{print $2}' | tail -1)+1))
-    printf "$@$(cat /proc/cpuinfo | grep -m1 'model name' | awk -F ': ' '{print $2}') ($corecount)${reset}\n"
+    printf "$*$(cat /proc/cpuinfo | grep -m1 'model name' | awk -F ': ' '{print $2}') ($corecount)${reset}\n"
 }
 
 gpu() {
-    printf "$@$($DIR/vegautils --gpu 2>/dev/null)${reset}\n"
+    printf "$*$($DIR/vegautils --gpu 2>/dev/null)${reset}\n"
 }
 
 mem() {
-    printf "$@$($DIR/vegautils --ram 2>/dev/null)${reset}\n"
+    printf "$*$($DIR/vegautils --ram 2>/dev/null)${reset}\n"
 }
 
 hdd() {
-    printf "$@$($DIR/vegautils --disk 2>/dev/null)${reset}\n"
+    printf "$*$($DIR/vegautils --disk 2>/dev/null)${reset}\n"
 }
 
 res() {
     res=$(head -n1 -q /sys/class/drm/*/modes 2>/dev/null)
-    printf "$@$([ -z "$res" ] && echo "None" || echo $res)${reset}\n"
+    printf "$*$([ -z "$res" ] && echo "None" || echo $res)${reset}\n"
 }
 
 # Software
 
 os() {
-    printf "$@$(cat /etc/os-release | grep PRETTY_NAME | awk -F '"' '{print $2}')${reset}\n"
+    printf "$*$(cat /etc/os-release | grep PRETTY_NAME | awk -F '"' '{print $2}')${reset}\n"
 }
 
 kernel() {
-    printf "$@$($DIR/vegautils --kernel 2>/dev/null)${reset}\n"
+    printf "$*$($DIR/vegautils --kernel 2>/dev/null)${reset}\n"
 }
 
 packages() {
-    has() { type -p "$1" >/dev/null && manager=$1; }
-    show() { printf "$($@ | wc -l) (${1/-*})"; }
+    has() { type "$1" >/dev/null; }
+    show() { printf "$("$@" | wc -l) ($(echo $1 | sed 's/-.*//g')))"; }
 
     printf "$@"
 
@@ -137,39 +147,106 @@ wm() {
     if wmpid="$(fuser "${XDG_RUNTIME_DIR}/${WAYLAND_DISPLAY:-wayland-0}" 2>&1 | awk -F ' ' '{print $2}')" ||
         wmpid="$(lsof -t "${XDG_RUNTIME_DIR}/${WAYLAND_DISPLAY:-wayland-0}" 2>&1)"
     then
-        printf "$@$(cat /proc/${wmpid}/comm)${reset}\n"
+        printf "$*$(cat /proc/${wmpid}/comm)${reset}\n"
     else
-        printf "$@X11/None${reset}\n"
+        printf "$*X11/None${reset}\n"
     fi
 }
 
 terminal() {
     termpid=$(cat /proc/$$/stat | awk -F ' ' '{print $4}')
     termpid=$(cat /proc/$termpid/stat | awk -F ' ' '{print $4}')
-    printf "$@$(cat /proc/$termpid/comm)${reset}\n"
+    printf "$*$(cat /proc/$termpid/comm)${reset}\n"
 }
 
 shell() {
     termpid=$(cat /proc/$$/stat | awk -F ' ' '{print $4}')
-    printf "$@$(cat /proc/$termpid/comm)${reset}\n"
+    printf "$*$(cat /proc/$termpid/comm)${reset}\n"
 }
 
 ip_local() {
-    printf "$@$($DIR/vegautils --ip 2>/dev/null)${reset}\n"
+    printf "$*$($DIR/vegautils --ip 2>/dev/null)${reset}\n"
+}
+
+
+# Misc functions
+
+version() {
+    printf "vega ${vegaver}\n"
+
+    vermsg="Copyright (C) 2023 Frank Tao
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. If not, see <https://www.gnu.org/licenses/>."
+
+    printf "${vermsg}\n"
+}
+
+showhelp() {
+    printf "vega ${vegaver}\n"
+
+helpmsg="Copyright (C) 2023 Frank Tao, www.franktao.com
+
+Usage:	vega
+        vega [option]
+
+options:
+    --model
+        Displays device mode and exits
+    --cpu
+        Displays cpu and exits
+    --gpu
+        Displays the first gpu detected and exits
+    --ram
+        Displays memory info and exits
+    --disk
+        Displays free space / total space of the root partition
+    --res
+        Displays the screen resolution of the first monitor
+    --os
+        Displays the name of the operating system
+    --pkg
+        Displays the number of packages
+    --wm
+        Displays the current window manager
+    --term
+        Displays the current terminal
+    --shell
+        Displays the current shell
+    --ip
+        Displays the current device's local ip address
+    --version
+        Displays the version and license information
+    --help
+        Displays this help message
+
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+
+This is free software; you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law."
+
+    printf "${helpmsg}\n"
+}
+
+installconf() {
+    mkdir -p $HOME/.config/vega
+    cp $DIR/config.sh $HOME/.config/vega/config.sh
 }
 
 
 # Read flags
 
 case $1 in
-    "--help")
-        cat $(dirname "$0")/text/help
-        exit
-        ;;
-    "--version")
-        cat $(dirname "$0")/text/version
-        exit
-        ;;
     "--model")
         model
         exit
@@ -219,7 +296,15 @@ case $1 in
         exit
         ;;
     "--version")
-        cat $(dirname "$0")/text/version
+        version
+        exit
+        ;;
+    "--help")
+        showhelp
+        exit
+        ;;
+    "--installconf")
+        installconf
         exit
         ;;
     *)
