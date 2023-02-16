@@ -10,7 +10,7 @@ build: clean
 	cp src/vega bin/vega
 	cp src/config.sh bin/config.sh
 
-install: build
+install: remove build
 	sudo cp -r bin /etc/vega.d
 	sudo ln -sf /etc/vega.d/vega ${PREFIX}/bin/vega
 

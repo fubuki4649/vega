@@ -151,7 +151,7 @@ kernel() {
 
 packages() {
     has() { type "$1" 2>/dev/null 1>/dev/null ; }
-    show() { printf "$("$@" | wc -l) ($(echo $1 | sed 's/-.*//g')))"; }
+    show() { printf "$("$@" | wc -l) ($(echo $1 | sed 's/-.*//g'))"; }
 
     printf "$@"
 
@@ -179,9 +179,15 @@ packages() {
 }
 
 wm() {
-    if wmpid="$(fuser "${XDG_RUNTIME_DIR}/${WAYLAND_DISPLAY:-wayland-0}" 2>&1 | awk -F ' ' '{print $2}')" ||
+    has() { type "$1" 2>/dev/null 1>/dev/null ; }
+
+    if [ $(has fuser) ]; then
+        wmpid="$(fuser "${XDG_RUNTIME_DIR}/${WAYLAND_DISPLAY:-wayland-0}" 2>&1 | awk -F ' ' '{print $2}')"
+    else
         wmpid="$(lsof -t "${XDG_RUNTIME_DIR}/${WAYLAND_DISPLAY:-wayland-0}" 2>&1)"
-    then
+    fi
+
+    if [ ! -z "$wmpid" ]; then
         printf "$*$(cat /proc/${wmpid}/comm)${reset}\n"
     else
         printf "$*X11/None${reset}\n"
