@@ -1,4 +1,4 @@
-# This file is of vega
+# This file is a part of vega
 # 
 # vega is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,7 +15,7 @@
 
 
 hardware() {
-	subtitl "Hardware" 
+	subtitl "Hardware"
 	firstentry "MDL" && model "$soft"
 	entry "CPU" && cpu "$soft"
 	entry "GPU" && gpu "$soft"
@@ -41,8 +41,10 @@ fetch() {
 	title
 
 	hardware
-	printf '\n'
+	printlogo && printf '\n'
 
 	software
-	printf '\n'
+	printlogo && printf '\n'
+
+	printlogo finish && printf '\n'
 }

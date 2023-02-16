@@ -1,29 +1,24 @@
 C=gcc
 CFLAGS=-O3 -mtune=znver3
-EXEC=bin/vegautils
-OBJECTS=src/vegautils.o
 LINKFLAGS=-lm -lpci
-DEPENDS=${OBJECTS:.o=.d}
 PREFIX=/usr/local
 
-${EXEC}: ${OBJECTS}
+build:
 	mkdir bin
-	${C} ${CFLAGS} ${OBJECTS} $(LINKFLAGS) -o ${EXEC}
+	${C} ${CFLAGS} src/vegautils.c ${LINKFLAGS} -o bin/vegautils
+	${C} ${CFLAGS} src/logoutils.c ${LINKFLAGS} -o bin/logoutils
 	cp src/vega bin/vega
 	cp src/config.sh bin/config.sh
 
--include ${DEPENDS}
-
-.PHONY: clean
-
-install: ${EXEC}
+install: build
 	sudo cp -r bin /etc/vega.d
 	sudo ln -sf /etc/vega.d/vega ${PREFIX}/bin/vega
+
+.PHONY: clean remove
 
 remove:
 	sudo rm -rf /etc/vega.d
 	sudo rm -f ${PREFIX}/bin/vega
 
 clean:
-	rm -f ${OBJECTS} ${EXEC} ${DEPENDS}
 	rm -rf bin

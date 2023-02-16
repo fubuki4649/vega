@@ -32,16 +32,18 @@ soft='\033[2m'
 reset='\033[0m'
 
 
-# Sets directory env variables
+# Sets global vars
 
-DIR="$(dirname "$(readlink -f "$0")")"
+DIR=$(dirname "$(readlink -f "$0")")
+LNTMP=$(mktemp /tmp/vega.XXXX) && echo 0 > $LNTMP
+DIST=$(cat /etc/os-release | grep ^ID= | sed 's/ID=//g')
 
 if [ -z "$HOME" ]; then
-    HOME=~/sex
+    HOME=~/
 fi
 
 
-# Looks for config file
+# Looks for config files
 
 if [ -e $HOME/.config/vega/config.sh ]; then
     . $HOME/.config/vega/config.sh
@@ -52,25 +54,58 @@ fi
 
 # Formatting Helper Functions
 
+printlogo() {
+    IFS=%
+
+    # Tracks logo line number
+    ln=$(cat $LNTMP)
+    data=$($DIR/logoutils $DIST $ln 2>/dev/null)
+    lastln=$?
+
+    # Prints logo
+    printf "$data"
+
+    # Pads logo with spaces
+    strwidth="$(echo $data | sed $'s/\e\\[[0-9;:]*[a-zA-Z]//g' | wc -c)"
+    totalwidth=$($DIR/logoutils $DIST --width 2>/dev/null)
+    printf "%$((totalwidth - strwidth + 4))s"
+
+    # Updates line number
+    echo $((ln + 1)) > $LNTMP
+
+    if [ "$1" == "finish" ] && [ "$lastln" == "0" ]; then
+        printf '\n'
+        printlogo finish
+    fi;
+
+    unset IFS
+}
+
 title() {
+    printlogo
     titlelen=$(echo "$(whoami)"@"$(cat /etc/hostname)" | wc -c)
     printf "${accent}${bold}$(whoami)${reset}@${accent}${bold}$(cat /etc/hostname)${reset}\n"
-    printf "${soft}%${titlelen}s${reset}\n" |tr " " "="
+    printlogo
+    printf "%${titlelen}s\n" | tr " " "="
 }
 
 subtitl() {
+    printlogo
     printf "${bold}< $* >${reset}\n"
 }
 
 firstentry() {
+    printlogo
     printf "${accent}${bold}╔ $* = ${reset}"
 }
 
 entry() {
+    printlogo
     printf "${accent}${bold}╠ $* = ${reset}"
 }
 
 lastentry() {
+    printlogo
     printf "${accent}${bold}╚ $* = ${reset}"
 }
 
@@ -115,7 +150,7 @@ kernel() {
 }
 
 packages() {
-    has() { type "$1" >/dev/null; }
+    has() { type "$1" 2>/dev/null 1>/dev/null ; }
     show() { printf "$("$@" | wc -l) ($(echo $1 | sed 's/-.*//g')))"; }
 
     printf "$@"
@@ -314,3 +349,4 @@ esac
 # Run fetch
 
 fetch
+rm -f $LNTMP

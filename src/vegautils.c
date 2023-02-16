@@ -1,5 +1,5 @@
 /*
-This file is of vega
+This file is a part of vega
 
 vega is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@ along with vega. If not, see <https://www.gnu.org/licenses/>.
 
 int main(int argc, char** argv) {
 
-    fprintf(stderr, "vegautils is a part of vega. Do not run vegautils directly.\n");
+    fprintf(stderr, "vegautils is a part of vega. Do not run vegautils directly. Doing so may result in undefined behaviour.\n");
     fprintf(stderr, "Run 'vega --help\' for details.\n");
 
     if(argc == 1) goto exit;
