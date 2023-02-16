@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-vegaver="1.0.0"
+vegaver="1.0.0-dev"
 
 # Color variables
 red='\033[0;31m'
@@ -66,14 +66,14 @@ printlogo() {
     printf "$data"
 
     # Pads logo with spaces
-    strwidth="$(echo $data | sed $'s/\e\\[[0-9;:]*[a-zA-Z]//g' | wc -c)"
+    strwidth="$(echo $data | sed -E "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g" | wc -c)"
     totalwidth=$($DIR/logoutils $DIST --width 2>/dev/null)
     printf "%$((totalwidth - strwidth + 4))s"
 
     # Updates line number
     echo $((ln + 1)) > $LNTMP
 
-    if [ "$1" == "finish" ] && [ "$lastln" == "0" ]; then
+    if [ "$1" = "finish" ] && [ "$lastln" = "0" ]; then
         printf '\n'
         printlogo finish
     fi;
