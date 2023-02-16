@@ -3,7 +3,7 @@ CFLAGS=-O3 -mtune=znver3
 LINKFLAGS=-lm -lpci
 PREFIX=/usr/local
 
-build:
+build: clean
 	mkdir bin
 	${C} ${CFLAGS} src/vegautils.c ${LINKFLAGS} -o bin/vegautils
 	${C} ${CFLAGS} src/logoutils.c ${LINKFLAGS} -o bin/logoutils
