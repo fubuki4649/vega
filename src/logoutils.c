@@ -154,8 +154,11 @@ int main(int argc, char** argv) {
     fprintf(stderr, "vegautils is a part of vega. Do not run logoutils directly. Doing so may result in undefined behaviour.\n");
     fprintf(stderr, "Run 'vega --help' for details.\n");
 
+    const struct logo* l = NULL;
+    int ln = -1;
+
     if(argc < 3) goto exit;
-    const struct logo* l;
+    else ln = atoi(argv[2]);
 
     if(!strcmp(argv[1], "arch")) goto arch;
     else if(!strcmp(argv[1], "debian")) goto debian;
@@ -185,8 +188,6 @@ print:
         goto exit;
     }
 
-    int ln = atoi(argv[2]);
-
     // Pad with spaces
     if(ln >= l->height) {
         for(int i = 0; i < l->width; i++) printf(" ");
@@ -199,7 +200,8 @@ print:
     goto exit;
 
 exit: ;
-    if(ln >= l->height) return 1;
+    if(l == NULL || ln == -1) return 1;
+    else if(ln >= l->height) return 1;
     else return 0;
 
 }
