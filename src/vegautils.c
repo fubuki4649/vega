@@ -32,18 +32,23 @@ int main(int argc, char** argv) {
     fprintf(stderr, "vegautils is a part of vega. Do not run vegautils directly. Doing so may result in undefined behaviour.\n");
     fprintf(stderr, "Run 'vega --help\' for details.\n");
 
+    struct sysinfo system;
+    struct statvfs disk;
+    struct pci_access *pciaccess;
+    struct ifaddrs* ifaddress;
+
     if(argc == 1) goto exit;
 
     if(!strcmp(argv[1], "--ram")) goto ram;
     else if(!strcmp(argv[1], "--disk")) goto disk;
     else if(!strcmp(argv[1], "--gpu")) goto gpu;
     else if(!strcmp(argv[1], "--kernel")) goto kernel;
+    else if(!strcmp(argv[1], "--uptime")) goto uptime;
     else if(!strcmp(argv[1], "--ip")) goto localip;
     else goto exit;
 
 
 ram: ;
-    struct sysinfo system;
     sysinfo(&system);
 
     #define RAM_USED_MB llroundl((system.totalram - (system.freeram + system.bufferram + system.sharedram)) / (double)1048576)
@@ -52,7 +57,6 @@ ram: ;
     goto exit;
 
 disk: ;
-    struct statvfs disk;
     statvfs("/", &disk);
 
     #define DISK_USED_GB llroundl((disk.f_blocks - disk.f_bfree) * disk.f_frsize / 1073741824.0)
@@ -61,7 +65,6 @@ disk: ;
     goto exit;
 
 gpu: ;
-    struct pci_access *pciaccess;
     pciaccess = pci_alloc();
     pci_init(pciaccess);            // Initialize the PCI library
     pci_scan_bus(pciaccess);        // Gets list of PCI devices
@@ -93,8 +96,27 @@ kernel: ;
     printf("%s %s\n", os.sysname, os.release);
     goto exit;
 
+uptime: ;
+    sysinfo(&system);
+
+    long uptime = system.uptime;
+    long prntSeconds = uptime % 60;
+    long prntMinutes = (uptime / 60) % 60;
+    long prntHours = (uptime / 3600) % 24;
+    long prntDays = uptime / 86400;
+
+    if(prntDays) {
+        printf("%ld day%s ", prntDays, (prntDays != 1) ? "s" : "");
+        prntSeconds = 0;
+    }
+    if(prntHours) printf("%ld hour%s ", prntHours, (prntHours != 1) ? "s" : "");
+    if(prntMinutes) printf("%ld minute%s ", prntMinutes, (prntMinutes != 1) ? "s" : "");
+    if(prntSeconds) printf("%ld second%s ", prntSeconds, (prntSeconds != 1) ? "s" : "");
+
+    printf("\n");
+    goto exit;
+
 localip: ;
-    struct ifaddrs* ifaddress;
     getifaddrs(&ifaddress);
 
     char* addr = malloc(16);

@@ -149,6 +149,11 @@ kernel() {
     printf "$*$($DIR/vegautils --kernel 2>/dev/null)${reset}\n"
 }
 
+uptime() {
+    printf "$*$($DIR/vegautils --uptime 2>/dev/null)${reset}\n"
+
+}
+
 packages() {
     has() { type "$1" 2>/dev/null 1>/dev/null ; }
     show() { printf "$("$@" | wc -l) ($(echo $1 | sed 's/-.*//g'))"; }

@@ -29,6 +29,7 @@ software() {
 	subtitl "Software"
 	firstentry "OS " && os "$soft"
 	entry "KER" && kernel "$soft"
+	entry "UPT" && uptime "$soft"
 	entry "PKG" && packages "$soft"
 	entry "WMN" && wm "$soft"
 	entry "TER" && terminal "$soft"
