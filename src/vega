@@ -186,7 +186,8 @@ packages() {
 wm() {
     has() { type "$1" 2>/dev/null 1>/dev/null ; }
 
-    if [ $(has fuser) ]; then
+    has fuser
+    if [ $? = 0 ]; then
         wmpid="$(fuser "${XDG_RUNTIME_DIR}/${WAYLAND_DISPLAY:-wayland-0}" 2>&1 | awk -F ' ' '{print $2}')"
     else
         wmpid="$(lsof -t "${XDG_RUNTIME_DIR}/${WAYLAND_DISPLAY:-wayland-0}" 2>&1)"
