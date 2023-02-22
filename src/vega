@@ -262,6 +262,8 @@ options:
         Displays the screen resolution of the first monitor
     --os
         Displays the name of the operating system
+    --uptime
+        Displays the system uptime
     --pkg
         Displays the number of packages
     --wm
@@ -320,6 +322,10 @@ case $1 in
         ;;
     "--os")
         os
+        exit
+        ;;
+    "--uptime")
+        uptime
         exit
         ;;
     "--pkg")
