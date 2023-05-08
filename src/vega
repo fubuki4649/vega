@@ -179,21 +179,26 @@ packages() {
     has swupd      && show swupd bundle-list --quiet
     has pisi       && show pisi li
     has pacstall   && show pacstall -L
+    has rpm        && show rpm -qa
 
     printf "${reset}\n"
 }
 
 wm() {
     has() { type "$1" 2>/dev/null 1>/dev/null ; }
+    retval=0
 
     has fuser
     if [ $? = 0 ]; then
-        wmpid="$(fuser "${XDG_RUNTIME_DIR}/${WAYLAND_DISPLAY:-wayland-0}" 2>&1 | awk -F ' ' '{print $2}')"
+        wmpid="$(fuser "${XDG_RUNTIME_DIR}/${WAYLAND_DISPLAY:-wayland-0}" 2>&1)"
+	retval=$?
+	wmpid="$(echo $wmpid | awk -F ' ' '{print $2}')"
     else
         wmpid="$(lsof -t "${XDG_RUNTIME_DIR}/${WAYLAND_DISPLAY:-wayland-0}" 2>&1)"
+	retval=$?
     fi
 
-    if [ $? = 0 ]; then
+    if [ $retval = 0 ]; then
         printf "$*$(cat /proc/${wmpid}/comm)${reset}\n"
     else
         printf "$*X11/None${reset}\n"

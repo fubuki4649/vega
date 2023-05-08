@@ -133,7 +133,7 @@ const struct logo fedora = {
         FEDORA_C1 "  .;ccccccccccccc;" FEDORA_C3 ".:dddl" FEDORA_C2 ":." FEDORA_C1 ";ccccccc;." RESET,
         FEDORA_C1 " .:ccccccccccccc;" FEDORA_C3 "OWMKOOX" FEDORA_C2 "MWd" FEDORA_C1 ";ccccccc:." RESET,
         FEDORA_C1 ".:ccccccccccccc;" FEDORA_C3 "KMMc" FEDORA_C1 ";cc;" FEDORA_C2 "xMMc" FEDORA_C1 ";ccccccc:." RESET,
-        FEDORA_C1 " RESET,cccccccccccccc;" FEDORA_C3 "MMM." FEDORA_C1 ";cc;" FEDORA_C2 ";WW:" FEDORA_C1 ";cccccccc,",
+        FEDORA_C1 ",cccccccccccccc;" FEDORA_C3 "MMM." FEDORA_C1 ";cc;" FEDORA_C2 ";WW:" FEDORA_C1 ";cccccccc,",
         FEDORA_C1 ":cccccccccccccc;" FEDORA_C3 "MMM." FEDORA_C1 ";cc" FEDORA_C2 "xMMd" FEDORA_C1 "cccccccccc:" RESET,
         FEDORA_C1 ":ccccccc;" FEDORA_C2 "oxOO" FEDORA_C3 "O00MMM000" FEDORA_C2 "00kd" FEDORA_C1 ";cccccccccc:" RESET,
         FEDORA_C1 "cccccc;" FEDORA_C2 "0MMKxd" FEDORA_C3 "dddMMMkdd" FEDORA_C2 "cw" FEDORA_C1 ";cccccccccccc;" RESET,
