@@ -6,16 +6,16 @@ A simpler and faster command line system information tool designed to be faster 
 [![GPLv3](https://img.shields.io/badge/license-GPLv3-green)](#)
 
 ## DEPENDENCIES
-**vega**'s dependencies are designed to very minimal:
+**vega**'s dependencies are designed to minimal:
 
-- A GNU/Linux operating system
-- A POSIX compliant shell
+- GNU/Linux
+- POSIX sh
 - libpci
-- GCC
+- gcc (build)
 
 ## INSTALLATION
 
-Install:
+Install
 
     make install
 
