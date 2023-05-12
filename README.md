@@ -1,7 +1,7 @@
 # vega
 A simpler and faster command line system information tool designed to be faster than neofetch
 
-![screenshot](https://github.com/bloodandcoffee/vega/blob/master/screenshot.png?raw=true)
+![screenshot](https://github.com/onyasumi/vega/blob/master/screenshot.png?raw=true)
 
 [![GPLv3](https://img.shields.io/badge/license-GPLv3-green)](#)
 
