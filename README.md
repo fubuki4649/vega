@@ -13,6 +13,8 @@ A simpler and faster command line system information tool designed to be faster 
 - libpci
 - gcc (build)
 
+Experimental FreeBSD support requires [procfs(5) to be mounted](https://man.freebsd.org/cgi/man.cgi?query=procfs&apropos=0&sektion=5&manpath=FreeBSD+14.0-CURRENT&arch=default&format=html). It is recommended to install with `INSTALLPATH=/usr/local/etc/vega.d` since FreeBSD expects user-installed programs to go in `/usr/local`.
+
 ## INSTALLATION
 
 Install

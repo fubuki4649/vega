@@ -83,8 +83,8 @@ printlogo() {
 
 title() {
     printlogo
-    titlelen=$(echo "$(whoami)"@"$(cat /etc/hostname)" | wc -c)
-    printf "${accent}${bold}$(whoami)${reset}@${accent}${bold}$(cat /etc/hostname)${reset}\n"
+    titlelen=$(echo "$(whoami)"@"$(hostname)" | wc -c)
+    printf "${accent}${bold}$(whoami)${reset}@${accent}${bold}$(hostname)${reset}\n"
     printlogo
     printf "%${titlelen}s\n" | tr " " "="
 }
@@ -114,12 +114,22 @@ lastentry() {
 # Hardware
 
 model() {
-    printf "$*$(cat /sys/devices/virtual/dmi/id/product_name)${reset}\n"
+    modelname=$(cat /sys/devices/virtual/dmi/id/product_name 2>/dev/null)
+    if [ -z "$modelname" ]; then
+        modelname="Not Supported"
+    fi
+    printf "$*$modelname${reset}\n"
 }
 
 cpu() {
-    corecount=$(($(cat /proc/cpuinfo | grep 'processor' | awk -F ': ' '{print $2}' | tail -1)+1))
-    printf "$*$(cat /proc/cpuinfo | grep -m1 'model name' | awk -F ': ' '{print $2}') ($corecount)${reset}\n"
+    if [ $(uname) = "FreeBSD" ]; then
+        corecount=$(sysctl hw.ncpu | awk -F ': ' '{print $2}')
+        cpumodel=$(sysctl hw.model | awk -F ': ' '{print $2}')
+    else
+        corecount=$(($(cat /proc/cpuinfo | grep 'processor' | awk -F ': ' '{print $2}' | tail -1)+1))
+        cpumodel=$(cat /proc/cpuinfo | grep -m1 'model name' | awk -F ': ' '{print $2}')
+    fi
+    printf "$*$cpumodel ($corecount)${reset}\n"
 }
 
 gpu() {
@@ -155,8 +165,10 @@ uptime() {
 }
 
 packages() {
+    
+    # Inspired by neofetch by Dylan Araps
     has() { type "$1" 2>/dev/null 1>/dev/null ; }
-    show() { printf "$("$@" | wc -l) ($(echo $1 | sed 's/-.*//g'))"; }
+    show() { printf "$("$@" | wc -l | awk '{print $1}') ($(echo $1 | sed 's/-.*//g'))"; }
 
     printf "$@"
 
@@ -180,6 +192,7 @@ packages() {
     has pisi       && show pisi li
     has pacstall   && show pacstall -L
     has rpm        && show rpm -qa
+    has pkg        && show pkg info
 
     printf "${reset}\n"
 }
@@ -191,11 +204,11 @@ wm() {
     has fuser
     if [ $? = 0 ]; then
         wmpid="$(fuser "${XDG_RUNTIME_DIR}/${WAYLAND_DISPLAY:-wayland-0}" 2>&1)"
-	retval=$?
-	wmpid="$(echo $wmpid | awk -F ' ' '{print $2}')"
+        retval=$?
+        wmpid="$(echo $wmpid | awk -F ' ' '{print $2}')"
     else
         wmpid="$(lsof -t "${XDG_RUNTIME_DIR}/${WAYLAND_DISPLAY:-wayland-0}" 2>&1)"
-	retval=$?
+        retval=$?
     fi
 
     if [ $retval = 0 ]; then
@@ -205,15 +218,31 @@ wm() {
     fi
 }
 
+get_parent_pid() {
+    if [ $(uname) = "FreeBSD" ]; then
+        cat /proc/$1/status | awk -F ' ' '{print $3}'
+    else
+        cat /proc/$1/stat | awk -F ' ' '{print $4}'
+    fi
+}
+
+get_process_name() {
+    if [ $(uname) = "FreeBSD" ]; then
+        cat /proc/$1/status | awk -F ' ' '{print $1}'
+    else
+        cat /proc/$termpid/comm
+    fi
+}
+
 terminal() {
-    termpid=$(cat /proc/$$/stat | awk -F ' ' '{print $4}')
-    termpid=$(cat /proc/$termpid/stat | awk -F ' ' '{print $4}')
-    printf "$*$(cat /proc/$termpid/comm)${reset}\n"
+    termpid=$(get_parent_pid $$)
+    termpid=$(get_parent_pid $termpid)
+    printf "$*$(get_process_name $termpid)${reset}\n"
 }
 
 shell() {
-    termpid=$(cat /proc/$$/stat | awk -F ' ' '{print $4}')
-    printf "$*$(cat /proc/$termpid/comm)${reset}\n"
+    termpid=$(get_parent_pid $$)
+    printf "$*$(get_process_name $termpid)${reset}\n"
 }
 
 ip_local() {
@@ -249,7 +278,7 @@ showhelp() {
 
 helpmsg="Copyright (C) 2023 Frank Tao, www.franktao.com
 
-Usage:	vega
+Usage:  vega
         vega [option]
 
 options:

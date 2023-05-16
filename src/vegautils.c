@@ -18,6 +18,8 @@ along with vega. If not, see <https://www.gnu.org/licenses/>.
 #include <sys/sysinfo.h>
 #include <sys/statvfs.h>
 #include <sys/utsname.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
 #include <pci/pci.h>
 #include <ifaddrs.h>
 #include <netdb.h>
@@ -51,8 +53,14 @@ int main(int argc, char** argv) {
 ram: ;
     sysinfo(&system);
 
-    #define RAM_USED_MB llroundl((system.totalram - (system.freeram + system.bufferram + system.sharedram)) / (double)1048576)
-    #define RAM_TOTAL_MB llroundl(system.totalram / (double)1048576)
+    #ifdef __linux__
+    #define MB_SCALE (double)1048576
+    #else
+    #define MB_SCALE (double)1024
+    #endif
+
+    #define RAM_USED_MB llroundl((system.totalram - (system.freeram + system.bufferram + system.sharedram)) / MB_SCALE)
+    #define RAM_TOTAL_MB llroundl(system.totalram / MB_SCALE)
     printf("%ldMB / %ldMB\n", RAM_USED_MB, RAM_TOTAL_MB);
     goto exit;
 

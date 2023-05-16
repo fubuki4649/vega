@@ -149,6 +149,28 @@ const struct logo fedora = {
 };
 
 
+#define FREEBSD_C1 RESET RED SOFT
+const struct logo freebsd = {
+    15, 30,
+    {
+        FREEBSD_C1 " ```                        `" RESET,
+        FREEBSD_C1 "s` `.....---.......--.```   -/" RESET,
+        FREEBSD_C1 "+o   .--`         /y:`      +." RESET,
+        FREEBSD_C1 " yo`:.            :o      `+-" RESET,
+        FREEBSD_C1 "  y/               -/`   -o/" RESET,
+        FREEBSD_C1 " .-                  ::/sy+:." RESET,
+        FREEBSD_C1 " /                     `--  /" RESET,
+        FREEBSD_C1 "`:                          :`" RESET,
+        FREEBSD_C1 "`:                          :`" RESET,
+        FREEBSD_C1 " /                          /" RESET,
+        FREEBSD_C1 " .-                        -." RESET,
+        FREEBSD_C1 "  --                      -." RESET,
+        FREEBSD_C1 "   `:`                  `:`" RESET,
+        FREEBSD_C1 "     .--             `--." RESET,
+        FREEBSD_C1 "        .---.....----." RESET
+    }
+};
+
 int main(int argc, char** argv) {
 
     fprintf(stderr, "vegautils is a part of vega. Do not run logoutils directly. Doing so may result in undefined behaviour.\n");
@@ -164,10 +186,15 @@ int main(int argc, char** argv) {
     else if(!strcmp(argv[1], "debian")) goto debian;
     else if(!strcmp(argv[1], "ubuntu")) goto ubuntu;
     else if(!strcmp(argv[1], "fedora")) goto fedora;
+    else if(!strcmp(argv[1], "freebsd")) goto freebsd;
     else goto exit;
 
 arch:
     l = &arch;
+    goto print;
+
+freebsd:
+    l = &freebsd;
     goto print;
 
 debian:
