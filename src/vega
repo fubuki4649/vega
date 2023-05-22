@@ -83,8 +83,15 @@ printlogo() {
 
 title() {
     printlogo
-    titlelen=$(echo "$(whoami)"@"$(hostname)" | wc -c)
-    printf "${accent}${bold}$(whoami)${reset}@${accent}${bold}$(hostname)${reset}\n"
+
+    if [ $(uname) = "Linux" ]; then
+        titlelen=$(echo "$(whoami)""$(cat /etc/hostname)" | wc -c)
+        printf "${accent}${bold}$(whoami)${reset}@${accent}${bold}$(cat /etc/hostname)${reset}\n"
+    else
+        titlelen=$(echo "$(whoami)""$(hostname)" | wc -c)
+        printf "${accent}${bold}$(whoami)${reset}@${accent}${bold}$(hostname)${reset}\n"
+    fi
+    
     printlogo
     printf "%${titlelen}s\n" | tr " " "="
 }
