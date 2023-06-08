@@ -41,28 +41,12 @@ int main(int argc, char** argv) {
 
     if(argc == 1) goto exit;
 
-    if(!strcmp(argv[1], "--ram")) goto ram;
-    else if(!strcmp(argv[1], "--disk")) goto disk;
+    if(!strcmp(argv[1], "--disk")) goto disk;
     else if(!strcmp(argv[1], "--gpu")) goto gpu;
     else if(!strcmp(argv[1], "--kernel")) goto kernel;
     else if(!strcmp(argv[1], "--uptime")) goto uptime;
     else if(!strcmp(argv[1], "--ip")) goto localip;
     else goto exit;
-
-
-ram: ;
-    sysinfo(&system);
-
-    #ifdef __linux__
-    #define MB_SCALE (double)1048576
-    #else
-    #define MB_SCALE (double)1024
-    #endif
-
-    #define RAM_USED_MB llroundl((system.totalram - (system.freeram + system.bufferram + system.sharedram)) / MB_SCALE)
-    #define RAM_TOTAL_MB llroundl(system.totalram / MB_SCALE)
-    printf("%ldMB / %ldMB\n", RAM_USED_MB, RAM_TOTAL_MB);
-    goto exit;
 
 disk: ;
     statvfs("/", &disk);

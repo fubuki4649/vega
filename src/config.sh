@@ -19,7 +19,7 @@ hardware() {
 	firstentry "MDL" && model "$soft"
 	entry "CPU" && cpu "$soft"
 	entry "GPU" && gpu "$soft"
-	entry "MEM" && mem "$soft"
+	entry "RAM" && mem "$soft"
 	entry "HDD" && hdd "$soft"
 	lastentry "RES" && res "$soft"
 }
