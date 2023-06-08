@@ -147,7 +147,7 @@ mem() {
 
     if [ $(uname) = "FreeBSD" ]; then
         memtotal=$(expr $(sysctl -n hw.physmem) / 1048576)
-        memused=$(expr $(sysctl -n vm.stats.vm.v_active_count) * $(sysctl -n hw.pagesize) / 1048576)
+        memused=$(expr $(sysctl -n vm.stats.vm.v_active_count) \* $(sysctl -n hw.pagesize) / 1048576)
     else
         memtotal=$(expr $(cat /proc/meminfo | grep MemTotal: | awk -F ' ' '{print $2}') / 1024)
         memused=$(expr $(cat /proc/meminfo | grep Active: | awk -F ' ' '{print $2}') / 1024)
