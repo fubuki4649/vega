@@ -115,10 +115,10 @@ localip: ;
     bool hasConnection = false;
 
     for(struct ifaddrs* i = ifaddress; i; i = i->ifa_next) {
-        if(i->ifa_addr->sa_family != AF_INET) continue;     // Ignores the wrong type of address
+        if(i->ifa_addr == NULL || i->ifa_addr->sa_family != AF_INET) continue;     // Ignores the wrong type of address
         getnameinfo(i->ifa_addr, sizeof(struct sockaddr_in), addr, NI_MAXHOST, NULL, 0, NI_NUMERICHOST);
         
-	    if(!strncmp(addr, "127", 3) || !strncmp(addr, "169", 3) || !strncmp(addr, ":", 1)) continue;    // Ignore loopback and localhost
+        if(!strncmp(addr, "127", 3) || !strncmp(addr, "169", 3) || !strncmp(addr, ":", 1)) continue;    // Ignore loopback and localhost
 
         // Check for local IPv4
         if(!strncmp(addr, "192", 3) || !strncmp(addr, "172", 3) || !strncmp(addr, "10", 2)){
