@@ -48,4 +48,6 @@ fetch() {
 	printlogo && printf '\n'
 
 	printlogo finish && printf '\n'
+
+	colors && printf '\n'
 }

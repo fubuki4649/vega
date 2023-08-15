@@ -268,6 +268,17 @@ ip_local() {
 
 # Misc functions
 
+colors() {
+    for i in {0..7}; do
+        printf '\033[1;4'$i'm   \033[0m'
+    done
+
+    for i in {0..7}; do
+        printf '\033[10'$i'm   \033[0m'
+    done
+    printf '\n'
+}
+
 version() {
     printf "vega ${vegaver}\n"
 
