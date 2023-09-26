@@ -219,9 +219,9 @@ wm() {
 
     has fuser
     if [ $? = 0 ]; then
-        wmpid="$(fuser "${XDG_RUNTIME_DIR}/${WAYLAND_DISPLAY:-wayland-0}" 2>&1)"
+        wmpid="$(fuser "${XDG_RUNTIME_DIR}/${WAYLAND_DISPLAY:-wayland-0}" 2>/dev/null)"
         retval=$?
-        wmpid="$(echo $wmpid | awk -F ' ' '{print $2}')"
+        wmpid="$(echo $wmpid | awk -F ' ' '{print $0}')"
     else
         wmpid="$(lsof -t "${XDG_RUNTIME_DIR}/${WAYLAND_DISPLAY:-wayland-0}" 2>&1)"
         retval=$?
