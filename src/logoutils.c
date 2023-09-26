@@ -18,7 +18,6 @@ along with vega. If not, see <https://www.gnu.org/licenses/>.
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <regex.h>
 
 #define RED "\033[0;31m"
 #define GREEN "\033[0;32m"
@@ -173,7 +172,7 @@ const struct logo freebsd = {
 
 int main(int argc, char** argv) {
 
-    fprintf(stderr, "vegautils is a part of vega. Do not run logoutils directly. Doing so may result in undefined behaviour.\n");
+    fprintf(stderr, "logoutils is a part of vega. Do not run logoutils directly. Doing so may result in undefined behaviour.\n");
     fprintf(stderr, "Run 'vega --help' for details.\n");
 
     const struct logo* l = NULL;

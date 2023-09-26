@@ -49,5 +49,5 @@ fetch() {
 
 	printlogo finish && printf '\n'
 
-	colors && printf '\n'
+	# colors && printf '\n'
 }
