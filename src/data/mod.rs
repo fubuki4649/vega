@@ -1,2 +1,3 @@
-pub mod title;
-pub mod hardware;
+mod hardware;
+mod software;
+pub mod data;
