@@ -1,3 +1,3 @@
 mod hardware;
 mod software;
-pub mod data;
+pub mod common;

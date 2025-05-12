@@ -4,13 +4,19 @@ use crate::data::software::software::get_software_info;
 use crate::sh;
 use colored::Colorize;
 use std::process::Command;
+use sysinfo::{MemoryRefreshKind, RefreshKind, System};
 
 pub fn get_system_info() -> Vec<String> {
-    
+
+    let mut sys = System::new_with_specifics(
+        RefreshKind::nothing()
+            .with_memory(MemoryRefreshKind::nothing().with_ram())
+    );
+
     let mut lines: Vec<String> = Vec::with_capacity(19);
     
     lines.append(&mut get_title());
-    lines.append(&mut get_hardware_info());
+    lines.append(&mut get_hardware_info(&mut sys));
     lines.push(String::new());
     lines.append(&mut get_software_info());
     

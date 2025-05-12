@@ -1,7 +1,8 @@
-use std::process::Command;
-use crate::_utils::run_command::ShellReturn;
 use crate::_utils::read_file::cat;
+use crate::_utils::run_command::ShellReturn;
 use crate::sh;
+use std::process::Command;
+use sysinfo::{MemoryRefreshKind, System};
 
 
 pub fn get_model() -> String {
@@ -37,8 +38,10 @@ pub fn get_gpu() -> String {
     "Coming Soon!".to_string()
 }
 
-pub fn get_ram() -> String {
-    "Coming Soon!".to_string()
+pub fn get_ram(sys: &mut System) -> String {
+    sys.refresh_memory_specifics(MemoryRefreshKind::nothing().with_ram());
+
+    format!("{}MB / {}MB", sys.used_memory() / 1048576, sys.total_memory() / 1048576)
 }
 
 pub fn get_drive() -> String {

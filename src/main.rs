@@ -1,4 +1,4 @@
-use crate::data::data::get_system_info;
+use crate::data::common::get_system_info;
 
 mod data;
 mod _utils;
