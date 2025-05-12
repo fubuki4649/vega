@@ -1,13 +1,19 @@
+use crate::_utils::run_command::ShellReturn;
+use crate::_utils::sort_by_priority::SortByPriority;
+use crate::sh;
 use std::cmp::Ordering;
 use std::net::IpAddr;
 use std::process::Command;
 use sysinfo::{NetworkData, Networks, System};
-use crate::_utils::run_command::ShellReturn;
-use crate::_utils::sort_by_priority::SortByPriority;
-use crate::sh;
 
 pub fn get_os() -> String {
-    "Coming Soon".to_string()
+    let linux_os_ver = sh!("awk -F= '/^PRETTY_NAME=/ {{ gsub(/\"/, \"\", $2); print $2 }}' /etc/os-release");
+    
+    if linux_os_ver.err_code == 0 {
+        linux_os_ver.stdout.trim().to_string()
+    } else {
+        System::long_os_version().unwrap_or("Unknown OS".to_string())
+    }
 }
 
 pub fn get_kernel() -> String {
@@ -96,7 +102,7 @@ pub fn get_ip_addr() -> String {
         // Default priority for other interfaces (brX, hostX, etc.)
         else { 69 }
     });
-    
+
     // Return the first non-loopback interface's IP address
     if networks_sorted.len() > 0 && networks_sorted[0].0 != "lo" {
         return extract_ip(networks_sorted[0].1);
