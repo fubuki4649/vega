@@ -47,7 +47,13 @@ pub fn get_uptime() -> String {
 
 pub fn get_packages() -> String {
     let script = include_str!("../../../static/sh/packages.sh");
-    sh!("{}", script).stdout.trim().to_string()
+    let mac_script = include_str!("../../../static/sh/packages_macos.sh");
+    
+    if sh!("uname").stdout.trim() == "Darwin" {
+        sh!("{}", mac_script).stdout.trim().to_string()
+    } else {
+        sh!("{}", script).stdout.trim().to_string()
+    }
 }
 
 pub fn get_window_manager() -> String {
