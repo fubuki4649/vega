@@ -46,7 +46,8 @@ pub fn get_uptime() -> String {
 }
 
 pub fn get_packages() -> String {
-    "Coming Soon".to_string()
+    let script = include_str!("../../../static/sh/packages.sh");
+    sh!("{}", script).stdout.trim().to_string()
 }
 
 pub fn get_window_manager() -> String {
@@ -105,9 +106,9 @@ pub fn get_ip_addr() -> String {
 
     // Return the first non-loopback interface's IP address
     if networks_sorted.len() > 0 && networks_sorted[0].0 != "lo" {
-        return extract_ip(networks_sorted[0].1);
+        extract_ip(networks_sorted[0].1)
     }
     // Otherwise, return "No Connection"
-    else { return "No Connection".to_string(); }
+    else { "No Connection".to_string() }
 
 }
