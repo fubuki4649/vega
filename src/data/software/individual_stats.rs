@@ -80,7 +80,12 @@ pub fn get_window_manager() -> String {
 
     // Fallback PID method for Wayland only
     let wmpid: ShellReturn = if let Some(_) = which::which("fuser") {
-        sh!("fuser \"${{XDG_RUNTIME_DIR}}/${{WAYLAND_DISPLAY:-wayland-0}}\" | awk '{{print $1}}'")
+        let pid_raw = sh!("fuser \"${{XDG_RUNTIME_DIR}}/${{WAYLAND_DISPLAY:-wayland-0}}\"");
+        if pid_raw.err_code == 0 {
+            sh!("echo {} | awk '{{print $1}}'", pid_raw.stdout.trim())
+        } else { 
+            pid_raw
+        }
     } else if let Some(_) = which::which("lsof") {
         sh!("lsof -t \"${{XDG_RUNTIME_DIR}}/${{WAYLAND_DISPLAY:-wayland-0}}\" 2>&1")
     } else {
@@ -95,7 +100,7 @@ pub fn get_window_manager() -> String {
         return sh!("ps -p {} -o comm=", wmpid.stdout.trim()).stdout.trim().to_string();
     }
 
-    "Unknown".to_string()
+    "None/Unknown".to_string()
 }
 
 pub fn get_terminal() ->  String {

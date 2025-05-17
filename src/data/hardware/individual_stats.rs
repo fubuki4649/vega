@@ -97,7 +97,7 @@ pub fn get_drive() -> String {
 }
 
 pub fn get_screen_res() -> String {
-    let screen_res = sh!("head -n1 -q /sys/class/drm/*/modes");
+    let screen_res = sh!("head -n1 -q /sys/class/drm/*/modes | tr '\n' ' '");
     let res = screen_res.stdout.trim().to_string();
 
     if screen_res.err_code == 0 && !res.is_empty() {
