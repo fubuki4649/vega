@@ -1,3 +1,6 @@
+use std::ffi::CString;
+use std::mem::zeroed;
+use libc::{statvfs, statvfs as Statvfs};
 use crate::_utils::read_file::cat;
 use crate::_utils::run_command::ShellReturn;
 use crate::sh;
@@ -45,9 +48,28 @@ pub fn get_ram(sys: &mut System) -> String {
 }
 
 pub fn get_drive() -> String {
-    "Coming Soon!".to_string()
+    let path = CString::new("/").unwrap();
+    let mut stat: Statvfs = unsafe { zeroed() };
+
+    let result = unsafe { statvfs(path.as_ptr(), &mut stat) };
+    if result != 0 {
+        return "Failed / Not Supported".to_string();
+    }
+
+    let total_space = stat.f_blocks as u64 * stat.f_frsize as u64;
+    let free_space = stat.f_bfree as u64 * stat.f_frsize as u64;
+    let used_space = total_space - free_space;
+
+    format!("{}GB / {}GB", used_space / 1073741824, total_space / 1073741824)
 }
 
 pub fn get_screen_res() -> String {
-    "Coming Soon!".to_string()
+    let screenres = sh!("head -n1 -q /sys/class/drm/*/modes");
+    let res = screenres.stdout.trim().to_string();
+    
+    if screenres.err_code == 0 && !res.is_empty() {
+        res
+    } else {
+        "None".to_string()
+    }
 }

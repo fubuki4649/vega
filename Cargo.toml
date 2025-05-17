@@ -6,3 +6,4 @@ edition = "2024"
 [dependencies]
 colored = "3.0.0"
 sysinfo = "0.35.0"
+libc = "0.2.172"

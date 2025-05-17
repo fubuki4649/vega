@@ -5,6 +5,7 @@ use std::cmp::Ordering;
 use std::net::IpAddr;
 use std::process::Command;
 use sysinfo::{NetworkData, Networks, System};
+use crate::_utils::which;
 
 pub fn get_os() -> String {
     let linux_os_ver = sh!("awk -F= '/^PRETTY_NAME=/ {{ gsub(/\"/, \"\", $2); print $2 }}' /etc/os-release");
@@ -57,15 +58,61 @@ pub fn get_packages() -> String {
 }
 
 pub fn get_window_manager() -> String {
-    "Coming Soon".to_string()
+
+    // macOS Hardcode
+    if sh!("uname").stdout.trim() == "Darwin" {
+        const SUPPORTED_WMS: [&str; 2] = ["yabai", "Amethyst"];
+
+        for wm in SUPPORTED_WMS {
+            if sh!("pgrep -x {}", wm).err_code == 0 {
+                return wm.to_string();
+            }
+        }
+
+        return "aqua".to_string();
+    }
+
+    // Read $XDG_CURRENT_DESKTOP for Wayland and X11
+    let desktop = sh!(": \"${{XDG_CURRENT_DESKTOP:?}}\" && echo \"$XDG_CURRENT_DESKTOP\"");
+    if desktop.err_code == 0 && desktop.stdout.trim() != "" {
+        return desktop.stdout.trim().to_string();
+    }
+
+    // Fallback PID method for Wayland only
+    let wmpid: ShellReturn = if let Some(_) = which::which("fuser") {
+        sh!("fuser \"${{XDG_RUNTIME_DIR}}/${{WAYLAND_DISPLAY:-wayland-0}}\" | awk '{{print $1}}'")
+    } else if let Some(_) = which::which("lsof") {
+        sh!("lsof -t \"${{XDG_RUNTIME_DIR}}/${{WAYLAND_DISPLAY:-wayland-0}}\" 2>&1")
+    } else {
+        ShellReturn {
+            stdout: "".to_string(),
+            stderr: "".to_string(),
+            err_code: 1,
+        }
+    };
+
+    if wmpid.err_code == 0 {
+        return sh!("ps -p {} -o comm=", wmpid.stdout.trim()).stdout.trim().to_string();
+    }
+
+    "Unknown".to_string()
 }
 
 pub fn get_terminal() ->  String {
-    "Coming Soon".to_string()
+    let mut pid = unsafe { libc::getppid() };
+    let mut pname = sh!("ps -p {} -o comm=", pid).stdout.trim().to_string();
+    
+    while pname.ends_with("sh") {
+        pid = sh!("ps -p {} -o ppid=", pid).stdout.trim().parse::<i32>().unwrap_or(1);
+        pname = sh!("ps -p {} -o comm=", pid).stdout.trim().to_string();
+    }
+    
+    pname
 }
 
 pub fn get_shell() -> String {
-    "Coming Soon".to_string()
+    let ppid = unsafe { libc::getppid() };
+    sh!("ps -p {} -o comm=", ppid).stdout.trim().to_string()
 }
 
 pub fn get_ip_addr() -> String {
