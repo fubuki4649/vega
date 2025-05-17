@@ -97,10 +97,10 @@ pub fn get_drive() -> String {
 }
 
 pub fn get_screen_res() -> String {
-    let screenres = sh!("head -n1 -q /sys/class/drm/*/modes");
-    let res = screenres.stdout.trim().to_string();
+    let screen_res = sh!("head -n1 -q /sys/class/drm/*/modes");
+    let res = screen_res.stdout.trim().to_string();
 
-    if screenres.err_code == 0 && !res.is_empty() {
+    if screen_res.err_code == 0 && !res.is_empty() {
         res
     } else {
         "None".to_string()
