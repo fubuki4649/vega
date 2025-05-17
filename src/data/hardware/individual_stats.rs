@@ -5,7 +5,10 @@ use crate::_utils::read_file::cat;
 use crate::_utils::run_command::ShellReturn;
 use crate::sh;
 use std::process::Command;
+use pci_ids::{FromId, Vendor};
+use pci_info::pci_enums::PciDeviceClass;
 use sysinfo::{MemoryRefreshKind, System};
+use pci_info::PciInfo;
 
 
 pub fn get_model() -> String {
@@ -38,7 +41,37 @@ pub fn get_cpu() -> String {
 }
 
 pub fn get_gpu() -> String {
-    "Coming Soon!".to_string()
+
+    // Enumerate the devices on the PCI bus
+    let info = PciInfo::enumerate_pci();
+
+    if let Ok(devices) = info {
+
+        for r in devices {
+            if let Ok(device) = r {
+                // Ignores non-gpus
+                if device.device_class().unwrap_or(PciDeviceClass::Unclassified) == PciDeviceClass::DisplayController {
+
+                    // Extracts user-friendly strings for the first GPU
+                    let vendor = Vendor::from_id(device.vendor_id());
+                    if let Some(vendor) = vendor {
+                        for d in vendor.devices() {
+                            if d.id() == device.device_id() {
+                                return format!("{} {} [{:04X}:{:04X}]", vendor.name(), d.name(), device.vendor_id(), device.device_id());
+                            }
+                        }
+                    }
+                    
+                }
+            }
+        }
+
+        "None".to_string()
+
+    } else {
+        "Not Supported".to_string()
+    }
+
 }
 
 pub fn get_ram(sys: &mut System) -> String {
@@ -66,7 +99,7 @@ pub fn get_drive() -> String {
 pub fn get_screen_res() -> String {
     let screenres = sh!("head -n1 -q /sys/class/drm/*/modes");
     let res = screenres.stdout.trim().to_string();
-    
+
     if screenres.err_code == 0 && !res.is_empty() {
         res
     } else {
