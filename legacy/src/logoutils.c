@@ -148,7 +148,7 @@ const struct logo fedora = {
 };
 
 
-#define FREEBSD_C1 RESET RED SOFT
+#define FREEBSD_C1 RESET RED BOLD
 const struct logo freebsd = {
     15, 30,
     {

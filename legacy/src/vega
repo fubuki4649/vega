@@ -59,7 +59,7 @@ printlogo() {
 
     # Tracks logo line number
     ln=$(cat $LNTMP)
-    data=$($DIR/logoutils $DIST $ln 2>/dev/null)
+    data=$($DIR/logoutils freebsd $ln 2>/dev/null)
     lastln=$?
 
     # Prints logo
