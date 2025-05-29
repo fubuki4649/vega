@@ -1,0 +1,14 @@
+pkgbase = vega
+	pkgdesc = A way faster command line system information tool
+	pkgver = 2.0.0
+	pkgrel = 1
+	url = https://github.com/fubuki4649/vega
+	arch = x86_64
+	license = GPL3
+	makedepends = cargo
+	makedepends = git
+	depends = pciutils
+	source = vega::git+https://github.com/fubuki4649/vega#tag=v2.0.0
+	md5sums = SKIP
+
+pkgname = vega
