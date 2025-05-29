@@ -1,36 +1,34 @@
 # vega
-A simpler and faster command line system information tool designed to be faster than neofetch
+A way faster command line system information tool
 
 ![screenshot](https://github.com/onyasumi/vega/blob/master/screenshot.png?raw=true)
 
-[![GPLv3](https://img.shields.io/badge/license-GPLv3-green)](#)
+[![GPLv3](https://img.shields.io/badge/license-GPLv3-green)](https://www.gnu.org/licenses/gpl-3.0.txt)
 
 ## DEPENDENCIES
-**vega**'s dependencies are designed to minimal:
+**vega**'s should work out of the box on any UNIX variant. However, only GNU/Linux and macOS are tested at the moment.
 
-- GNU/Linux (or FreeBSD)
-- POSIX sh
-- libpci
-- gcc (build)
-- GNU Make (build)
+The following build dependencies are needed:
 
-Experimental FreeBSD support requires [procfs(5) to be mounted](https://man.freebsd.org/cgi/man.cgi?query=procfs&apropos=0&sektion=5&manpath=FreeBSD+14.0-CURRENT&arch=default&format=html). Note that GNU Make and BSD make are incompatible, so gmake is needed to build on FreeBSD.
+- `make`
+- `cargo`
+- `sudo`
+
+The following logos are included in `/static/logos` (more to come)
+
+- Arch
+- Debian
+- Fedora
+- FreeBSD
+- Ubuntu
 
 ## INSTALLATION
 
 Install
 
-    make install
+    make install    # Do not run as root
 
 Uninstall
 
     make remove
-
-
-Also remove `~/.config/vega/config.sh` (`make remove` does not do this)
-
-## CONFIGURATION
-
-The main config file is located at `/etc/vega.d/config.sh`
-Run `vega --installconf` to install a copy to your user config directory (this will override the systemwide config)
 
