@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use std::fs::{self, File};
 use std::io;
 use std::io::{BufRead, Write};
+use std::ops::Add;
 use std::path::Path;
 use std::sync::LazyLock;
 
@@ -90,9 +91,17 @@ fn main() -> anyhow::Result<()> {
         for change in color_changes.iter().rev() {
             logo[change.row as usize].insert_str(change.col as usize, &change.bash_code);
         }
+        
+        // Insert color codes in beginning and end
+        let psa: Vec<String> = vec![String::new(); rows as usize];
+        for change in color_changes.iter() {
+            
+        }
 
         // Write to output
-        File::create(&out_path)?.write_all(logo.join("\n").as_bytes())?;
+        let mut out_file = File::create(&out_path)?;
+        out_file.write_all(first_line.add("\n").as_bytes())?;
+        out_file.write_all(logo.join("\n").as_bytes())?;
 
     }
 

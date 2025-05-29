@@ -6,7 +6,7 @@ use colored::Colorize;
 use std::process::Command;
 use sysinfo::{MemoryRefreshKind, RefreshKind, System};
 
-pub fn get_system_info() -> Vec<String> {
+pub fn get_system_info() -> impl Iterator<Item = String> {
 
     let mut sys = System::new_with_specifics(
         RefreshKind::nothing()
@@ -20,7 +20,7 @@ pub fn get_system_info() -> Vec<String> {
     lines.push(String::new());
     lines.append(&mut get_software_info());
     
-    lines
+    lines.into_iter()
     
 }
 
