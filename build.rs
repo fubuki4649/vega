@@ -93,12 +93,15 @@ fn main() -> anyhow::Result<()> {
         }
         
         // Insert color codes in the beginning and end
+        // Build prefix sum array
         let mut psa: Vec<String> = vec![String::new(); rows as usize];
         for change in color_changes.iter() {
             psa[change.row as usize] = change.bash_code.clone();
         }
         
+        // Insert color codes
         let mut prev_line_color = &psa[0];
+        logo[0] += COLORS["reset"];
         for i in 1..logo.len() {
             logo[i].insert_str(0, prev_line_color);
             logo[i] += COLORS["reset"];
