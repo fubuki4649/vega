@@ -21,9 +21,14 @@ The following logos are included in `/static/logos` (more to come)
 - Arch
 - Artix
 - Debian
+- Endeavour
 - Fedora
 - FreeBSD
 - Gentoo
+- Linux Mint
+- Manjaro
+- NixOS
+- Nobara
 - Pop!_OS
 - Raspberry Pi OS
 - Ubuntu

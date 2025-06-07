@@ -38,6 +38,22 @@ struct ColorChange {
     bash_code: String,
 }
 
+pub trait UnicodeSafeInsert {
+    fn insert_str_unicode(&mut self, char_idx: usize, insert: &str);
+}
+
+impl UnicodeSafeInsert for String {
+    fn insert_str_unicode(&mut self, char_idx: usize, insert: &str) {
+        // Convert character index to byte index safely
+        if let Some(byte_idx) = self.char_indices().nth(char_idx).map(|(i, _)| i) {
+            self.insert_str(byte_idx, insert);
+        } else {
+            self.push_str(insert); // Append if index is past end
+        }
+    }
+}
+
+
 fn parse_color_change(color_change: &str) -> ColorChange {
 
     let mut iter = color_change.split_whitespace();
@@ -98,7 +114,7 @@ fn main() -> anyhow::Result<()> {
         // Insert color codes
         let color_changes: Vec<ColorChange> = content.map(|line| parse_color_change(&line.unwrap())).collect();
         for change in color_changes.iter().rev() {
-            logo[change.row as usize].insert_str(change.col as usize, &change.bash_code);
+            logo[change.row as usize].insert_str_unicode(change.col as usize, &change.bash_code);
         }
         
         // Insert color codes in the beginning and end
@@ -112,7 +128,7 @@ fn main() -> anyhow::Result<()> {
         let mut prev_line_color = &psa[0];
         logo[0] += COLORS["reset"];
         for i in 1..logo.len() {
-            logo[i].insert_str(0, prev_line_color);
+            logo[i].insert_str_unicode(0, prev_line_color);
             logo[i] += COLORS["reset"];
             
             if !psa[i].is_empty() {
