@@ -1,10 +1,9 @@
-use std::process::Command;
 use crate::_utils::run_command::ShellReturn;
-use std::collections::HashMap;
-use std::io;
-use std::sync::LazyLock;
-use std::str::Lines;
 use crate::sh;
+use std::collections::HashMap;
+use std::process::Command;
+use std::str::Lines;
+use std::sync::LazyLock;
 
 static LOGOS: LazyLock<HashMap<&'static str, &'static str>> = LazyLock::new(|| {
     HashMap::from([
@@ -35,6 +34,9 @@ pub fn get_logo() -> Logo {
         "ubuntu" => include_str!("../../static/logos/sh/ubuntu"),
         "fedora" => include_str!("../../static/logos/sh/fedora"),
         "freebsd" => include_str!("../../static/logos/sh/freebsd"),
+        "macos" => include_str!("../../static/logos/sh/apple"),
+        "pop" => include_str!("../../static/logos/sh/popos"),
+        "raspbian" => include_str!("../../static/logos/sh/rpi"),
         _ => "",
     }.lines();
 
