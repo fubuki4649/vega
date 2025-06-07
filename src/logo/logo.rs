@@ -29,14 +29,17 @@ pub fn get_logo() -> Logo {
     };
 
     let mut content = match os_distro {
+        "alpine" => include_str!("../../static/logos/sh/alpine"),
         "arch" => include_str!("../../static/logos/sh/arch"),
+        "artix" => include_str!("../../static/logos/sh/artix"),
         "debian" => include_str!("../../static/logos/sh/debian"),
-        "ubuntu" => include_str!("../../static/logos/sh/ubuntu"),
         "fedora" => include_str!("../../static/logos/sh/fedora"),
         "freebsd" => include_str!("../../static/logos/sh/freebsd"),
+        "gentoo" => include_str!("../../static/logos/sh/gentoo"),
         "macos" => include_str!("../../static/logos/sh/apple"),
         "pop" => include_str!("../../static/logos/sh/popos"),
         "raspbian" => include_str!("../../static/logos/sh/rpi"),
+        "ubuntu" => include_str!("../../static/logos/sh/ubuntu"),
         _ => "",
     }.lines();
 

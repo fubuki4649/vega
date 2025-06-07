@@ -16,11 +16,14 @@ The following build dependencies are needed:
 
 The following logos are included in `/static/logos` (more to come)
 
+- Alpine
 - Apple
 - Arch
+- Artix
 - Debian
 - Fedora
 - FreeBSD
+- Gentoo
 - Pop!_OS
 - Raspberry Pi OS
 - Ubuntu

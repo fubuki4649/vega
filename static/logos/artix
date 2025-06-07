@@ -1,0 +1,59 @@
+20 39
+                   '
+                  'o'
+                 'ooo'
+                'ooxoo'
+               'ooxxxoo'
+              'oookkxxoo'
+             'oiioxkkxxoo'
+            ':;:iiiioxxxoo'
+               `'.;::ioxxoo'
+          '-.      `':;jiooo'
+         'oooio-..     `'i:io'
+        'ooooxxxxoio:,.   `'-;'
+       'ooooxxxxxkkxoooIi:-.  `'
+      'ooooxxxxxkkkkxoiiiiiji'
+     'ooooxxxxxkxxoiiii:'`     .i'
+    'ooooxxxxxoi:::'`       .;ioxo'
+   'ooooxooi::'`         .:iiixkxxo'
+  'ooooi:'`                `'';ioxxo'
+ 'ii'`                          '':io'
+'`                                   `'
+0 0 cyan soft
+1 19 lightcyan bold
+2 17 cyan soft
+2 19 lightcyan bold
+3 16 cyan soft
+3 18 lightcyan bold
+4 15 cyan soft
+4 18 lightcyan bold
+5 14 cyan soft
+5 17 lightcyan bold
+6 13 cyan soft
+6 16 lightcyan bold
+7 12 cyan soft
+7 17 lightcyan bold
+8 15 cyan soft
+8 20 lightcyan bold
+9 10 cyan soft
+9 24 lightcyan bold
+10 13 cyan soft
+10 27 lightcyan bold
+11 16 cyan soft
+11 30 lightcyan bold
+12 18 cyan soft
+13 0 lightcyan bold
+13 20 cyan soft
+14 0 lightcyan bold
+14 17 cyan soft
+15 0 lightcyan bold
+15 13 cyan soft
+15 32 lightcyan bold
+16 9 cyan soft
+16 30 lightcyan bold
+17 6 cyan soft
+17 33 lightcyan bold
+18 3 cyan soft
+18 36 lightcyan bold
+19 0 cyan soft
+19 38 lightcyan bold

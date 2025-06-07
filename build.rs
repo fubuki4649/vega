@@ -24,7 +24,7 @@ static COLORS: LazyLock<HashMap<&'static str, &'static str>> = LazyLock::new(|| 
         ("lightmagenta", "\x1b[0;95m"),
         ("lightcyan", "\x1b[0;96m"),
         ("white", "\x1b[0;97m"),
-        
+
         ("bold", "\x1b[1m"),
         ("soft", "\x1b[2m"),
         ("reset", "\x1b[0m"),
