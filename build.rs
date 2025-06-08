@@ -1,93 +1,33 @@
 use anyhow::anyhow;
-use std::collections::HashMap;
+use build::color_change::{parse_color_change, ColorChange};
+use build::color_map::COLORS;
+use build::unicode_insert::UnicodeInsert;
 use std::fs::{self, File};
 use std::io;
 use std::io::{BufRead, Write};
 use std::ops::Add;
 use std::path::Path;
-use std::sync::LazyLock;
-
-static COLORS: LazyLock<HashMap<&'static str, &'static str>> = LazyLock::new(|| {
-    HashMap::from([
-        ("red", "\x1b[0;31m"),
-        ("green", "\x1b[0;32m"),
-        ("yellow", "\x1b[0;33m"),
-        ("blue", "\x1b[0;34m"),
-        ("magenta", "\x1b[0;35m"),
-        ("cyan", "\x1b[0;36m"),
-        ("grey", "\x1b[0;37m"),
-
-        ("lightred", "\x1b[0;91m"),
-        ("lightgreen", "\x1b[0;92m"),
-        ("lightyellow", "\x1b[0;93m"),
-        ("lightblue", "\x1b[0;94m"),
-        ("lightmagenta", "\x1b[0;95m"),
-        ("lightcyan", "\x1b[0;96m"),
-        ("white", "\x1b[0;97m"),
-
-        ("bold", "\x1b[1m"),
-        ("soft", "\x1b[2m"),
-        ("reset", "\x1b[0m"),
-    ])
-});
 
 
-struct ColorChange {
-    row: u16,
-    col: u16,
-    bash_code: String,
-}
-
-pub trait UnicodeSafeInsert {
-    fn insert_str_unicode(&mut self, char_idx: usize, insert: &str);
-}
-
-impl UnicodeSafeInsert for String {
-    fn insert_str_unicode(&mut self, char_idx: usize, insert: &str) {
-        // Convert character index to byte index safely
-        if let Some(byte_idx) = self.char_indices().nth(char_idx).map(|(i, _)| i) {
-            self.insert_str(byte_idx, insert);
-        } else {
-            self.push_str(insert); // Append if index is past end
-        }
-    }
-}
-
-
-fn parse_color_change(color_change: &str) -> ColorChange {
-
-    let mut iter = color_change.split_whitespace();
-
-    let row = iter.next().unwrap().parse::<u16>().unwrap();
-    let col = iter.next().unwrap().parse::<u16>().unwrap();
-
-    let names: Vec<&str> = iter.collect();
-    let mut codes: Vec<&str> = Vec::with_capacity(names.len());
-
-    for name in names {
-        codes.push(COLORS[name])
-    }
-
-    ColorChange {
-        row,
-        col,
-        bash_code: codes.concat(),
-    }
+mod build {
+    pub(super) mod color_map;
+    pub(super) mod color_change;
+    pub(super) mod unicode_insert;
 }
 
 
 fn main() -> anyhow::Result<()> {
 
+    // Link CoreGraphics for macOS
     if std::env::var("CARGO_CFG_TARGET_OS")? == "macos" {
         println!("cargo:rustc-link-lib=framework=CoreGraphics");
     }
 
-    // === 2. DIR SETUP ===
+    // Preprocess distro logos
     let in_dir = Path::new("static/logos");
     let out_dir = Path::new("static/logos/sh");
     fs::create_dir_all(out_dir).expect("Failed to create output directory");
-
-    // === 3. FILE PROCESSING ===
+    
     for entry in fs::read_dir(in_dir)? {
 
         // Some Initial setup stuff
