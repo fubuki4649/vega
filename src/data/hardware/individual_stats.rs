@@ -13,8 +13,12 @@ use pci_info::PciInfo;
 
 pub fn get_model() -> String {
 
-    let model = cat("/sys/devices/virtual/dmi/id/product_name").trim().to_string();
-    if model.is_empty() { "Not Supported".to_string() } else { model }
+    match sh!("uname").stdout.trim() {
+        "Linux" => cat("/sys/devices/virtual/dmi/id/product_name").trim().to_string(),
+        "FreeBSD" => sh!("grep -i \"smbios: product\" /var/run/dmesg.boot | sed 's/.*[Pp]roduct: *//'").stdout.trim().to_string(),
+        "Darwin" => sh!("sysctl hw.model | awk '{{print $2}}'").stdout.trim().to_string(),
+        _ => "Not Supported".to_string()
+    }
 
 }
 
@@ -32,7 +36,7 @@ pub fn get_cpu() -> String {
             }
         },
         "FreeBSD" => [sh!("sysctl -n hw.model").stdout, sh!("sysctl -n hw.ncpu").stdout],
-        "Darwin" => [sh!("sysctl -n hw.machdep.cpu.brand_string").stdout, sh!("sysctl -n hw.ncpu").stdout],
+        "Darwin" => [sh!("sysctl -n machdep.cpu.brand_string").stdout, sh!("sysctl -n hw.ncpu").stdout],
         _ => ["Not Supported".to_string(), "0".to_string()]
     };
 
@@ -96,8 +100,32 @@ pub fn get_drive() -> String {
     format!("{}GB / {}GB", used_space / 1073741824, total_space / 1073741824)
 }
 
+#[cfg(target_os = "macos")]
 pub fn get_screen_res() -> String {
-    let screen_res = sh!("head -n1 -q /sys/class/drm/*/modes | tr '\n' ' '");
+    use core_graphics::display::CGDisplay;
+    use core_graphics::display::{CGDisplayPixelsWide, CGDisplayPixelsHigh};
+    
+    let screens = CGDisplay::active_displays().unwrap_or_default()
+        .iter()
+        .map(|&id| {
+            unsafe {
+                format!("{}x{}", CGDisplayPixelsWide(id), CGDisplayPixelsHigh(id))
+            }
+        })
+        .collect::<Vec<_>>();
+
+    if screens.is_empty() {
+        "None".to_string()
+    } else { screens.join(" ") }
+}
+
+#[cfg(not(target_os = "macos"))]
+pub fn get_screen_res() -> String {
+    let screen_res = match sh!("uname").stdout.trim() {
+        "Linux" => sh!("head -n1 -q /sys/class/drm/*/modes | tr '\n' ' '"),
+        "FreeBSD" => sh!("sysctl -n kern.vt.fb.default_mode"),
+        _ => sh!("meow"),
+    };
     let res = screen_res.stdout.trim().to_string();
 
     if screen_res.err_code == 0 && !res.is_empty() {

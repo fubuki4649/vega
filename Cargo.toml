@@ -10,5 +10,9 @@ libc = "0.2.172"
 pci-info = { version = "0.3.2", default-features = false }
 pci-ids = { version = "0.2.5", default-features = false }
 
+[target.'cfg(target_os = "macos")'.dependencies]
+core-graphics = { version = "0.25.0", default-features = false }
+
+
 [build-dependencies]
 anyhow = "1.0.98"

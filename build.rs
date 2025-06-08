@@ -78,6 +78,10 @@ fn parse_color_change(color_change: &str) -> ColorChange {
 
 fn main() -> anyhow::Result<()> {
 
+    if std::env::var("CARGO_CFG_TARGET_OS")? == "macos" {
+        println!("cargo:rustc-link-lib=framework=CoreGraphics");
+    }
+
     // === 2. DIR SETUP ===
     let in_dir = Path::new("static/logos");
     let out_dir = Path::new("static/logos/sh");

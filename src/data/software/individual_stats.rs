@@ -121,9 +121,8 @@ pub fn get_shell() -> String {
 }
 
 pub fn get_ip_addr() -> String {
-
     // Extract IP address from `NetworkData` (prioritizing IPv4 over IPv6)
-    let extract_ip: fn(&NetworkData) -> String = |network: &NetworkData| {
+    let extract_ip: fn(&NetworkData) -> Option<String> = |network: &NetworkData| {
         let mut addrs: Vec<IpAddr> = network.ip_networks().iter()
             .map(|ip| ip.addr).collect();
 
@@ -133,7 +132,7 @@ pub fn get_ip_addr() -> String {
             else { Ordering::Equal }
         );
 
-        if addrs.len() == 0 { "No Connection".to_string() } else { addrs[0].to_string() }
+        if addrs.len() == 0 { None } else { Some(addrs[0].to_string()) }
     };
 
     // Get a list of network interfaces and sort them
@@ -162,11 +161,12 @@ pub fn get_ip_addr() -> String {
         else { 69 }
     });
 
-    // Return the first non-loopback interface's IP address
-    if networks_sorted.len() > 0 && networks_sorted[0].0 != "lo" {
-        extract_ip(networks_sorted[0].1)
+    // Return the first non-loopback interface with an IP address
+    for network in networks_sorted {
+        if let Some(ip) = extract_ip(network.1) {
+            return ip;
+        }
     }
-    // Otherwise, return "No Connection"
-    else { "No Connection".to_string() }
-
+    
+    "No Connection".to_string()
 }
