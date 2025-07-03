@@ -7,7 +7,6 @@ pub struct ColorChange {
 }
 
 pub fn parse_color_change(color_change: &str) -> ColorChange {
-
     let mut iter = color_change.split_whitespace();
 
     let row = iter.next().unwrap().parse::<u16>().unwrap();
