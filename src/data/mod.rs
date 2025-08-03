@@ -1,3 +1,3 @@
-mod hardware;
-mod software;
 pub mod common;
+pub mod hardware;
+pub mod software;

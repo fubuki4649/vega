@@ -1,2 +1,2 @@
-mod individual_stats;
 pub mod hardware;
+pub mod individual_stats;

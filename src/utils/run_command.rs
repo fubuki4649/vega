@@ -1,7 +1,7 @@
 pub struct ShellReturn {
     pub err_code: u8,
     pub stdout: String,
-    pub stderr: String
+    pub stderr: String,
 }
 
 /// A macro that executes a shell command using `/bin/sh` and captures its output.

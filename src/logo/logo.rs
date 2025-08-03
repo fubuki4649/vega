@@ -1,15 +1,14 @@
-use crate::_utils::run_command::ShellReturn;
-use crate::sh;
-use std::collections::HashMap;
-use std::process::Command;
-use std::str::Lines;
-use std::sync::LazyLock;
+use std::{
+    collections::HashMap,
+    process::Command,
+    str::{Lines, SplitWhitespace},
+    sync::LazyLock,
+};
 
-static LOGOS: LazyLock<HashMap<&'static str, &'static str>> = LazyLock::new(|| {
-    HashMap::from([
-        ("arch", include_str!("../../static/logos/sh/arch")),
-    ])
-});
+use crate::{sh, utils::run_command::ShellReturn};
+
+static LOGOS: LazyLock<HashMap<&'static str, &'static str>> =
+    LazyLock::new(|| HashMap::from([("arch", include_str!("../../static/logos/sh/arch"))]));
 
 pub struct Logo {
     pub rows: u16,
@@ -17,18 +16,19 @@ pub struct Logo {
     pub content: Lines<'static>,
 }
 
+/// Retrieves the logo for the current operating system distribution.
 pub fn get_logo() -> Logo {
-
     let os_distro: &str = match sh!("uname").stdout.trim() {
-        "Linux" => {
-            &sh!("awk -F= '/^ID=/ {{ gsub(/\"/, \"\", $2); print $2 }}' /etc/os-release").stdout.trim().to_owned()
-        },
+        "Linux" => &sh!("awk -F= '/^ID=/ {{ gsub(/\"/, \"\", $2); print $2 }}' /etc/os-release")
+            .stdout
+            .trim()
+            .to_owned(),
         "Darwin" => "macos",
         "FreeBSD" => "freebsd",
         _ => "unknown",
     };
 
-    let mut content = match os_distro {
+    let mut content: Lines<'_> = match os_distro {
         "alpine" => include_str!("../../static/logos/sh/alpine"),
         "arch" => include_str!("../../static/logos/sh/arch"),
         "artix" => include_str!("../../static/logos/sh/artix"),
@@ -46,17 +46,17 @@ pub fn get_logo() -> Logo {
         "raspbian" => include_str!("../../static/logos/sh/rpi"),
         "ubuntu" => include_str!("../../static/logos/sh/ubuntu"),
         _ => "",
-    }.lines();
+    }
+    .lines();
 
-    let first_line = content.next().unwrap();
-    let mut logo_metadata = first_line.split_whitespace();
-    let rows = logo_metadata.next().unwrap().parse::<u16>().unwrap();
-    let cols = logo_metadata.next().unwrap().parse::<u16>().unwrap();
-    
+    let first_line: &str = content.next().unwrap();
+    let mut logo_metadata: SplitWhitespace<'_> = first_line.split_whitespace();
+    let rows: u16 = logo_metadata.next().unwrap().parse::<u16>().unwrap();
+    let cols: u16 = logo_metadata.next().unwrap().parse::<u16>().unwrap();
+
     Logo {
         rows,
         cols,
-        content,   
+        content,
     }
-
 }
