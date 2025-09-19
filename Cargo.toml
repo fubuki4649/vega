@@ -5,9 +5,9 @@ edition = "2024"
 
 [dependencies]
 colored = "3.0.0"
-sysinfo = "0.35.2"
-libc = "0.2.172"
-pci-info = { version = "0.3.2", default-features = false }
+sysinfo = { version = "0.37.0", default-features = false, features = ["network", "system"] }
+libc = { version = "0.2.175", default-features = false }
+pci-info = { version = "0.3.4", default-features = false }
 pci-ids = { version = "0.2.5", default-features = false }
 
 [target.'cfg(target_os = "macos")'.dependencies]
@@ -15,4 +15,4 @@ core-graphics = { version = "0.25.0", default-features = false }
 
 
 [build-dependencies]
-anyhow = "1.0.98"
+anyhow = "1.0.99"
