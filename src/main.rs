@@ -1,5 +1,6 @@
 use crate::data::common::get_system_info;
 use crate::logo::logo::get_logo_by_name;
+use std::io::{stdout, BufWriter, Write};
 
 mod data;
 mod _utils;
@@ -32,25 +33,22 @@ fn main() {
 
     let mut logo = get_logo_by_name(custom_logo.as_deref());
     let system_info = get_system_info();
+    let mut out = BufWriter::with_capacity(8192, stdout().lock());
     
-    system_info.for_each(|info| {
-        // Print logo
-        let content = logo.content.next();
-        if let Some(content) = content {
-            print!("{content}");
-        }
-        else { 
-            print!("{}", " ".repeat(logo.cols as usize));
+    for info in system_info {
+        if let Some(content) = logo.content.next() {
+            let _ = write!(out, "{content}");
+        } else { 
+            let _ = write!(out, "{}", " ".repeat(logo.cols as usize));
         }
         
-        // Print data
-        println!("   {info}");
-    });
-    
-    // Finish logo
-    for content in logo.content.by_ref() {
-        println!("{content}");
+        let _ = writeln!(out, "   {info}");
     }
     
-    println!();
+    for content in logo.content.by_ref() {
+        let _ = writeln!(out, "{content}");
+    }
+    
+    let _ = writeln!(out);
+    let _ = out.flush();
 }

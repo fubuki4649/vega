@@ -7,64 +7,73 @@ pub struct Logo {
     pub content: Lines<'static>,
 }
 
+const LOGO_MAP: &[(&[&str], &str)] = &[
+    (&["almalinux", "alma"], include_str!("../../static/logos/sh/almalinux")),
+    (&["alpine"], include_str!("../../static/logos/sh/alpine")),
+    (&["android"], include_str!("../../static/logos/sh/android")),
+    (&["apple", "macos", "darwin", "osx"], include_str!("../../static/logos/sh/apple")),
+    (&["arch", "archlinux"], include_str!("../../static/logos/sh/arch")),
+    (&["archcraft"], include_str!("../../static/logos/sh/archcraft")),
+    (&["arcolinux", "arco"], include_str!("../../static/logos/sh/arcolinux")),
+    (&["artix"], include_str!("../../static/logos/sh/artix")),
+    (&["cachyos", "cachy"], include_str!("../../static/logos/sh/cachyos")),
+    (&["centos"], include_str!("../../static/logos/sh/centos")),
+    (&["debian"], include_str!("../../static/logos/sh/debian")),
+    (&["elementary", "elementaryos"], include_str!("../../static/logos/sh/elementary")),
+    (&["endeavouros", "endeavour"], include_str!("../../static/logos/sh/endeavour")),
+    (&["fedora"], include_str!("../../static/logos/sh/fedora")),
+    (&["freebsd"], include_str!("../../static/logos/sh/freebsd")),
+    (&["garuda"], include_str!("../../static/logos/sh/garuda")),
+    (&["gentoo"], include_str!("../../static/logos/sh/gentoo")),
+    (&["kali", "kalilinux"], include_str!("../../static/logos/sh/kali")),
+    (&["manjaro"], include_str!("../../static/logos/sh/manjaro")),
+    (&["mint", "linuxmint"], include_str!("../../static/logos/sh/mint")),
+    (&["netbsd"], include_str!("../../static/logos/sh/netbsd")),
+    (&["nixos"], include_str!("../../static/logos/sh/nixos")),
+    (&["nobara"], include_str!("../../static/logos/sh/nobara")),
+    (&["openbsd"], include_str!("../../static/logos/sh/openbsd")),
+    (&["opensuse", "opensuse-tumbleweed", "opensuse-leap", "suse"], include_str!("../../static/logos/sh/opensuse")),
+    (&["pop", "popos", "pop_os"], include_str!("../../static/logos/sh/popos")),
+    (&["rhel", "redhat", "redhatenterpriselinux"], include_str!("../../static/logos/sh/rhel")),
+    (&["rocky", "rockylinux"], include_str!("../../static/logos/sh/rocky")),
+    (&["raspbian", "rpi", "raspberrypi", "raspberrypios"], include_str!("../../static/logos/sh/rpi")),
+    (&["slackware"], include_str!("../../static/logos/sh/slackware")),
+    (&["solus"], include_str!("../../static/logos/sh/solus")),
+    (&["steamos", "holo"], include_str!("../../static/logos/sh/steamos")),
+    (&["tux", "linux"], include_str!("../../static/logos/sh/tux")),
+    (&["ubuntu"], include_str!("../../static/logos/sh/ubuntu")),
+    (&["void", "voidlinux"], include_str!("../../static/logos/sh/void")),
+    (&["zorin", "zorinos"], include_str!("../../static/logos/sh/zorin")),
+];
+
 fn match_distro(name: &str) -> Option<&'static str> {
-    match name.to_lowercase().as_str() {
-        "almalinux" | "alma" => Some(include_str!("../../static/logos/sh/almalinux")),
-        "alpine" => Some(include_str!("../../static/logos/sh/alpine")),
-        "android" => Some(include_str!("../../static/logos/sh/android")),
-        "apple" | "macos" | "darwin" | "osx" => Some(include_str!("../../static/logos/sh/apple")),
-        "arch" | "archlinux" => Some(include_str!("../../static/logos/sh/arch")),
-        "archcraft" => Some(include_str!("../../static/logos/sh/archcraft")),
-        "arcolinux" | "arco" => Some(include_str!("../../static/logos/sh/arcolinux")),
-        "artix" => Some(include_str!("../../static/logos/sh/artix")),
-        "cachyos" | "cachy" => Some(include_str!("../../static/logos/sh/cachyos")),
-        "centos" => Some(include_str!("../../static/logos/sh/centos")),
-        "debian" => Some(include_str!("../../static/logos/sh/debian")),
-        "elementary" | "elementaryos" => Some(include_str!("../../static/logos/sh/elementary")),
-        "endeavouros" | "endeavour" => Some(include_str!("../../static/logos/sh/endeavour")),
-        "fedora" => Some(include_str!("../../static/logos/sh/fedora")),
-        "freebsd" => Some(include_str!("../../static/logos/sh/freebsd")),
-        "garuda" => Some(include_str!("../../static/logos/sh/garuda")),
-        "gentoo" => Some(include_str!("../../static/logos/sh/gentoo")),
-        "kali" | "kalilinux" => Some(include_str!("../../static/logos/sh/kali")),
-        "manjaro" => Some(include_str!("../../static/logos/sh/manjaro")),
-        "mint" | "linuxmint" => Some(include_str!("../../static/logos/sh/mint")),
-        "netbsd" => Some(include_str!("../../static/logos/sh/netbsd")),
-        "nixos" => Some(include_str!("../../static/logos/sh/nixos")),
-        "nobara" => Some(include_str!("../../static/logos/sh/nobara")),
-        "openbsd" => Some(include_str!("../../static/logos/sh/openbsd")),
-        "opensuse" | "opensuse-tumbleweed" | "opensuse-leap" | "suse" => Some(include_str!("../../static/logos/sh/opensuse")),
-        "pop" | "popos" | "pop_os" => Some(include_str!("../../static/logos/sh/popos")),
-        "rhel" | "redhat" | "redhatenterpriselinux" => Some(include_str!("../../static/logos/sh/rhel")),
-        "rocky" | "rockylinux" => Some(include_str!("../../static/logos/sh/rocky")),
-        "raspbian" | "rpi" | "raspberrypi" | "raspberrypios" => Some(include_str!("../../static/logos/sh/rpi")),
-        "slackware" => Some(include_str!("../../static/logos/sh/slackware")),
-        "solus" => Some(include_str!("../../static/logos/sh/solus")),
-        "steamos" | "holo" => Some(include_str!("../../static/logos/sh/steamos")),
-        "tux" | "linux" => Some(include_str!("../../static/logos/sh/tux")),
-        "ubuntu" => Some(include_str!("../../static/logos/sh/ubuntu")),
-        "void" | "voidlinux" => Some(include_str!("../../static/logos/sh/void")),
-        "zorin" | "zorinos" => Some(include_str!("../../static/logos/sh/zorin")),
-        _ => None,
+    let name_trimmed = name.trim();
+    for &(aliases, logo) in LOGO_MAP {
+        for &alias in aliases {
+            if name_trimmed.eq_ignore_ascii_case(alias) {
+                return Some(logo);
+            }
+        }
     }
+    None
 }
 
 fn detect_distro() -> (&'static str, Option<String>) {
     #[cfg(target_os = "macos")]
     {
-        return ("macos", None);
+        ("macos", None)
     }
     #[cfg(target_os = "freebsd")]
     {
-        return ("freebsd", None);
+        ("freebsd", None)
     }
     #[cfg(target_os = "openbsd")]
     {
-        return ("openbsd", None);
+        ("openbsd", None)
     }
     #[cfg(target_os = "netbsd")]
     {
-        return ("netbsd", None);
+        ("netbsd", None)
     }
 
     #[cfg(not(any(target_os = "macos", target_os = "freebsd", target_os = "openbsd", target_os = "netbsd")))]
