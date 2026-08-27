@@ -237,6 +237,7 @@ version = "2.2.0"
 dependencies = [
  "anyhow",
  "colored",
+ "core-foundation",
  "core-graphics",
  "libc 1.0.0-alpha.4",
  "pci-ids",

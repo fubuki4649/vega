@@ -169,8 +169,58 @@ pub fn get_gpu() -> String {
     }
     #[cfg(target_os = "macos")]
     {
-        if let Some(cpu_brand) = get_sysctl_string("machdep.cpu.brand_string").filter(|s| s.starts_with("Apple")) {
-            return format!("{cpu_brand} GPU");
+        #[link(name = "IOKit", kind = "framework")]
+        unsafe extern "C" {
+            fn IOServiceMatching(name: *const std::ffi::c_char) -> *const std::ffi::c_void;
+            fn IOServiceGetMatchingServices(master_port: libc::mach_port_t, matching: *const std::ffi::c_void, existing: *mut *const std::ffi::c_void) -> libc::kern_return_t;
+            fn IOIteratorNext(iterator: *const std::ffi::c_void) -> *const std::ffi::c_void;
+            fn IORegistryEntryCreateCFProperty(entry: *const std::ffi::c_void, key: *const std::ffi::c_void, allocator: *const std::ffi::c_void, options: u32) -> *const std::ffi::c_void;
+            fn IOObjectRelease(object: *const std::ffi::c_void) -> libc::kern_return_t;
+            fn CFDataGetBytePtr(the_data: *const std::ffi::c_void) -> *const u8;
+            fn CFDataGetLength(the_data: *const std::ffi::c_void) -> isize;
+            fn CFStringCreateWithCString(alloc: *const std::ffi::c_void, c_str: *const std::ffi::c_char, encoding: u32) -> *const std::ffi::c_void;
+            fn CFRelease(cf: *const std::ffi::c_void);
+        }
+
+        unsafe {
+            let matching = IOServiceMatching(c"IOPCIDevice".as_ptr());
+            if !matching.is_null() {
+                let mut iterator = std::ptr::null();
+                if IOServiceGetMatchingServices(0, matching, &raw mut iterator) == libc::KERN_SUCCESS && !iterator.is_null() {
+                    let k_model = CFStringCreateWithCString(std::ptr::null(), c"model".as_ptr(), 0x0800_0100);
+                    let mut entry = IOIteratorNext(iterator);
+                    while !entry.is_null() {
+                        let prop = IORegistryEntryCreateCFProperty(entry, k_model, std::ptr::null(), 0);
+                        if !prop.is_null() {
+                            let len = CFDataGetLength(prop);
+                            if len > 0 {
+                                let bytes_ptr = CFDataGetBytePtr(prop);
+                                let slice = std::slice::from_raw_parts(bytes_ptr, len.cast_unsigned());
+                                let name = String::from_utf8_lossy(slice).trim_matches('\0').trim().to_string();
+                                CFRelease(prop);
+                                IOObjectRelease(entry);
+                                IOObjectRelease(iterator);
+                                CFRelease(k_model);
+                                if !name.is_empty() {
+                                    return name;
+                                }
+                            }
+                            CFRelease(prop);
+                        }
+                        IOObjectRelease(entry);
+                        entry = IOIteratorNext(iterator);
+                    }
+                    IOObjectRelease(iterator);
+                    if !k_model.is_null() { CFRelease(k_model); }
+                }
+            }
+        }
+
+        if let Some(cpu_brand) = get_sysctl_string("machdep.cpu.brand_string") {
+            if cpu_brand.starts_with("Apple") {
+                return format!("{cpu_brand} GPU");
+            }
+            return format!("{cpu_brand} Graphics");
         }
         "Apple Graphics".to_string()
     }

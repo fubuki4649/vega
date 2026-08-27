@@ -10,6 +10,7 @@ pci-ids = { version = "0.2.6", default-features = false }
 
 [target.'cfg(target_os = "macos")'.dependencies]
 core-graphics = { version = "0.25.0", default-features = false }
+core-foundation = "0.10.1"
 
 [build-dependencies]
 anyhow = { version = "1.0.104", default-features = false }

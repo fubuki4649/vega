@@ -318,6 +318,47 @@ pub fn get_window_manager() -> String {
 
     #[cfg(target_os = "macos")]
     {
+        const KNOWN_MACOS_WMS: &[&str] = &["yabai", "aerospace", "amethyst", "chunkwm", "Rectangle", "Spectacle"];
+
+        unsafe extern "C" {
+            fn proc_listpids(type_: u32, typeinfo: u32, buffer: *mut libc::c_void, buffersize: libc::c_int) -> libc::c_int;
+            fn proc_name(pid: libc::c_int, buffer: *mut libc::c_void, buffersize: u32) -> libc::c_int;
+        }
+
+        let mut pids = [0i32; 1024];
+        let bytes_written = unsafe {
+            proc_listpids(
+                1, // PROC_ALL_PIDS
+                0,
+                pids.as_mut_ptr().cast(),
+                i32::try_from(std::mem::size_of_val(&pids)).unwrap_or(0),
+            )
+        };
+
+        if bytes_written > 0 {
+            let count = (bytes_written.cast_unsigned()) as usize / std::mem::size_of::<i32>();
+            let mut name_buf = [0u8; 256];
+
+            for &pid in &pids[..count.min(pids.len())] {
+                if pid <= 0 { continue; }
+                let len = unsafe {
+                    proc_name(
+                        pid,
+                        name_buf.as_mut_ptr().cast(),
+                        u32::try_from(name_buf.len()).unwrap_or(0),
+                    )
+                };
+                if len > 0 {
+                    let name = String::from_utf8_lossy(&name_buf[..(len.cast_unsigned() as usize)]);
+                    for &wm in KNOWN_MACOS_WMS {
+                        if name.eq_ignore_ascii_case(wm) {
+                            return wm.to_string();
+                        }
+                    }
+                }
+            }
+        }
+
         "Aqua".to_string()
     }
 
