@@ -17,6 +17,7 @@ mod build {
 
 
 fn main() -> anyhow::Result<()> {
+    println!("cargo:rerun-if-changed=static/logos");
 
     // Link CoreGraphics for macOS
     if std::env::var("CARGO_CFG_TARGET_OS")? == "macos" {

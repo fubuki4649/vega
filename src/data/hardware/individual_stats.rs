@@ -2,8 +2,6 @@ use std::ffi::CString;
 use std::mem::zeroed;
 use libc::{statvfs, statvfs as Statvfs};
 #[cfg(target_os = "linux")]
-use crate::_utils::read_file::cat;
-#[cfg(target_os = "linux")]
 use pci_ids::{FromId, Vendor};
 
 #[cfg(any(target_os = "macos", target_os = "freebsd"))]
@@ -54,13 +52,17 @@ fn get_sysctl_int(name: &str) -> Option<i32> {
 pub fn get_model() -> String {
     #[cfg(target_os = "linux")]
     {
-        let product_name = cat("/sys/devices/virtual/dmi/id/product_name").trim().to_string();
-        if !product_name.is_empty() {
-            return product_name;
+        if let Ok(name) = std::fs::read_to_string("/sys/devices/virtual/dmi/id/product_name") {
+            let trimmed = name.trim();
+            if !trimmed.is_empty() {
+                return trimmed.to_string();
+            }
         }
-        let model = cat("/sys/firmware/devicetree/base/model").trim().to_string();
-        if !model.is_empty() {
-            return model;
+        if let Ok(model) = std::fs::read_to_string("/sys/firmware/devicetree/base/model") {
+            let trimmed = model.trim().trim_matches('\0');
+            if !trimmed.is_empty() {
+                return trimmed.to_string();
+            }
         }
         "Unknown".to_string()
     }

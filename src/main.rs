@@ -3,7 +3,6 @@ use crate::logo::logo::get_logo_by_name;
 use std::io::{stdout, BufWriter, Write};
 
 mod data;
-mod _utils;
 mod logo;
 
 fn main() {
@@ -34,12 +33,13 @@ fn main() {
     let mut logo = get_logo_by_name(custom_logo.as_deref());
     let system_info = get_system_info();
     let mut out = BufWriter::with_capacity(8192, stdout().lock());
+    let pad_width = logo.cols as usize;
     
     for info in system_info {
         if let Some(content) = logo.content.next() {
             let _ = write!(out, "{content}");
         } else { 
-            let _ = write!(out, "{}", " ".repeat(logo.cols as usize));
+            let _ = write!(out, "{:pad_width$}", "");
         }
         
         let _ = writeln!(out, "   {info}");

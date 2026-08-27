@@ -1,4 +1,3 @@
-use crate::_utils::sort_by_priority::SortByPriority;
 use std::net::IpAddr;
 
 #[cfg(any(target_os = "macos", target_os = "freebsd"))]
@@ -445,7 +444,7 @@ pub fn get_ip_addr() -> String {
             }
             unsafe { libc::freeifaddrs(ifaddrs) };
 
-            list.sort_by_priority(|(name, ip)| {
+            list.sort_by_key(|(name, ip)| {
                 let nw_name = name.to_lowercase();
                 let proto_rank = match ip {
                     IpAddr::V4(_) => 0,
