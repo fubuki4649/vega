@@ -1,0 +1,48 @@
+12 21
+        #####
+       #######
+       ##O#O##
+       #######
+     ###########
+    #############
+   ###############
+   ################
+  #################
+#####################
+#####################
+  #################
+0 0 grey soft
+2 9 white bold
+2 10 grey soft
+2 11 white bold
+2 12 grey soft
+3 8 lightyellow bold
+3 13 grey soft
+4 7 white soft
+4 9 lightyellow bold
+4 12 white soft
+4 14 grey soft
+5 5 white soft
+5 15 grey soft
+6 4 white soft
+6 16 grey soft
+7 4 white soft
+7 16 grey soft
+8 0 yellow bold
+8 4 grey soft
+8 5 white soft
+8 16 grey soft
+8 18 yellow bold
+9 0 yellow bold
+9 6 grey soft
+9 7 white soft
+9 14 grey soft
+9 15 yellow bold
+10 0 yellow bold
+10 7 grey soft
+10 8 white soft
+10 13 grey soft
+10 14 yellow bold
+11 0 yellow bold
+11 7 grey soft
+11 14 yellow bold

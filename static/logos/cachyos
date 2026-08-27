@@ -1,0 +1,178 @@
+22 54
+           .-------------------------:
+          .+=========================.
+         :++===++==================-       :++-
+        :*++====+++++=============-        .==:
+       -*+++=====+***++==========:
+      =*++++========------------:
+     =*+++++=====-                     ...
+   .+*+++++=-===:                    .=+++=:
+  :++++=====-==:                     -*****+
+ :++========-=.                      .=+**+.
+.+==========-.                          .
+ :+++++++====-                                .--==-.
+  :++==========.                             :+++++++:
+   .-===========.                            =*****+*+
+    .-===========:                           .+*****+:
+      -=======++++:::::::::::::::::::::::::-:  .---:
+       :======++++====+++******************=.
+        :=====+++==========++++++++++++++*-
+         .====++==============++++++++++*-
+          .===+==================+++++++:
+           .-=======================+++:
+             ..........................
+0 0 cyan soft
+0 11 cyan soft
+0 12 lightcyan bold
+0 37 cyan soft
+1 0 cyan soft
+1 10 cyan soft
+1 11 lightgreen bold
+1 13 lightcyan bold
+1 37 cyan soft
+2 0 cyan soft
+2 9 cyan soft
+2 10 lightgreen bold
+2 12 lightcyan bold
+2 15 lightgreen bold
+2 17 lightcyan bold
+2 35 cyan soft
+2 43 cyan soft
+2 44 lightgreen bold
+2 46 cyan soft
+3 0 cyan soft
+3 8 cyan soft
+3 9 lightgreen bold
+3 12 lightcyan bold
+3 16 lightgreen bold
+3 23 lightcyan bold
+3 35 cyan soft
+3 43 cyan soft
+3 44 lightcyan bold
+3 46 cyan soft
+4 0 cyan soft
+4 7 cyan soft
+4 8 lightgreen bold
+4 12 lightcyan bold
+4 17 lightgreen bold
+4 24 lightcyan bold
+4 34 cyan soft
+5 0 cyan soft
+5 6 lightcyan bold
+5 7 lightgreen bold
+5 13 lightcyan bold
+5 21 cyan soft
+6 0 cyan soft
+6 5 lightcyan bold
+6 6 lightgreen bold
+6 13 lightcyan bold
+6 19 cyan soft
+6 39 white soft
+7 0 cyan soft
+7 3 cyan soft
+7 4 lightgreen bold
+7 11 lightcyan bold
+7 14 cyan soft
+7 15 lightcyan bold
+7 18 cyan soft
+7 37 cyan soft
+7 38 lightgreen bold
+7 43 cyan soft
+8 0 cyan soft
+8 2 cyan soft
+8 3 lightgreen bold
+8 7 lightcyan bold
+8 13 cyan soft
+8 14 lightcyan bold
+8 16 cyan soft
+8 37 cyan soft
+8 38 lightgreen bold
+9 0 cyan soft
+9 1 cyan soft
+9 2 lightgreen bold
+9 5 lightcyan bold
+9 13 cyan soft
+9 14 lightcyan bold
+9 15 cyan soft
+9 37 cyan soft
+9 38 lightgreen bold
+9 43 white soft
+10 0 cyan soft
+10 0 cyan soft
+10 1 lightgreen bold
+10 2 lightcyan bold
+10 12 cyan soft
+10 40 white soft
+11 0 cyan soft
+11 1 cyan soft
+11 2 lightgreen bold
+11 9 lightcyan bold
+11 13 cyan soft
+11 46 white soft
+11 47 cyan soft
+11 49 lightcyan bold
+11 52 cyan soft
+12 0 cyan soft
+12 2 cyan soft
+12 3 lightgreen bold
+12 5 lightcyan bold
+12 15 cyan soft
+12 45 white soft
+12 46 lightgreen bold
+12 53 white soft
+13 0 cyan soft
+13 3 cyan soft
+13 4 lightcyan bold
+13 16 cyan soft
+13 45 lightcyan bold
+13 46 lightgreen bold
+14 0 cyan soft
+14 4 cyan soft
+14 5 lightcyan bold
+14 17 cyan soft
+14 45 cyan soft
+14 46 lightgreen bold
+14 53 cyan soft
+15 0 cyan soft
+15 6 cyan soft
+15 7 lightcyan bold
+15 14 lightgreen bold
+15 18 cyan soft
+15 47 white soft
+15 48 cyan soft
+15 49 lightcyan bold
+15 52 cyan soft
+16 0 cyan soft
+16 7 cyan soft
+16 8 lightcyan bold
+16 14 lightgreen bold
+16 18 lightcyan bold
+16 22 lightgreen bold
+16 41 lightcyan bold
+17 0 cyan soft
+17 8 cyan soft
+17 9 lightcyan bold
+17 14 lightgreen bold
+17 17 lightcyan bold
+17 27 lightgreen bold
+17 41 lightcyan bold
+18 0 cyan soft
+18 9 cyan soft
+18 10 lightcyan bold
+18 14 lightgreen bold
+18 16 lightcyan bold
+18 30 lightgreen bold
+18 40 lightcyan bold
+19 0 cyan soft
+19 10 cyan soft
+19 11 lightcyan bold
+19 14 lightgreen bold
+19 15 lightcyan bold
+19 33 lightgreen bold
+19 40 cyan soft
+20 0 cyan soft
+20 11 cyan soft
+20 12 lightcyan bold
+20 36 lightgreen bold
+20 39 cyan soft
+21 0 white soft

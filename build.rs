@@ -64,8 +64,8 @@ fn main() -> anyhow::Result<()> {
         // Insert color codes in the beginning and end
         // Build prefix sum array
         let mut psa: Vec<String> = vec![String::new(); rows as usize];
-        for change in color_changes.iter() {
-            psa[change.row as usize] = change.bash_code.clone();
+        for change in &color_changes {
+            psa[change.row as usize].clone_from(&change.bash_code);
         }
         
         // Insert color codes

@@ -1,0 +1,58 @@
+20 44
+                     '   .
+                    /   /
+                   /   /
+                  /   /
+                 /   /
+                /   /
+               /   /
+              /   /
+             /   /
+            /   /
+           /   /
+          /   /
+         /   /
+        /   /
+       /   /
+  .---/---/--------------------------------.
+ /    `---'                             '. \
+/                                           \
+\                                           /
+ `-----------------------------------------'
+0 0 white bold
+1 20 white bold
+1 24 white soft
+2 19 white bold
+2 23 white soft
+3 18 white bold
+3 22 white soft
+4 17 white bold
+4 21 white soft
+5 16 white bold
+5 20 white soft
+6 15 white bold
+6 19 white soft
+7 14 white bold
+7 18 white soft
+8 13 white bold
+8 17 white soft
+9 12 white bold
+9 16 white soft
+10 11 white bold
+10 15 white soft
+11 10 white bold
+11 14 white soft
+12 9 white bold
+12 13 white soft
+13 8 white bold
+13 12 white soft
+14 7 white bold
+14 11 white soft
+15 2 blue soft
+15 6 white bold
+15 10 white soft
+15 11 blue soft
+16 1 lightblue bold
+17 0 lightblue bold
+18 0 lightblue bold
+19 1 blue soft

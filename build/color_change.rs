@@ -17,7 +17,7 @@ pub fn parse_color_change(color_change: &str) -> ColorChange {
     let mut codes: Vec<&str> = Vec::with_capacity(names.len());
 
     for name in names {
-        codes.push(COLORS[name])
+        codes.push(COLORS[name]);
     }
 
     ColorChange {

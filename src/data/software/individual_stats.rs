@@ -1,7 +1,6 @@
 use crate::_utils::run_command::ShellReturn;
 use crate::_utils::sort_by_priority::SortByPriority;
 use crate::sh;
-use std::cmp::Ordering;
 use std::net::IpAddr;
 use std::process::Command;
 use sysinfo::{NetworkData, Networks, System};
@@ -79,19 +78,19 @@ pub fn get_window_manager() -> String {
     }
 
     // Fallback PID method for Wayland only
-    let wmpid: ShellReturn = if let Some(_) = which::which("fuser") {
+    let wmpid: ShellReturn = if which::which("fuser").is_some() {
         let pid_raw = sh!("fuser \"${{XDG_RUNTIME_DIR}}/${{WAYLAND_DISPLAY:-wayland-0}}\"");
         if pid_raw.err_code == 0 {
             sh!("echo {} | awk '{{print $1}}'", pid_raw.stdout.trim())
         } else { 
             pid_raw
         }
-    } else if let Some(_) = which::which("lsof") {
+    } else if which::which("lsof").is_some() {
         sh!("lsof -t \"${{XDG_RUNTIME_DIR}}/${{WAYLAND_DISPLAY:-wayland-0}}\" 2>&1")
     } else {
         ShellReturn {
-            stdout: "".to_string(),
-            stderr: "".to_string(),
+            stdout: String::new(),
+            stderr: String::new(),
             err_code: 1,
         }
     };
@@ -126,13 +125,12 @@ pub fn get_ip_addr() -> String {
         let mut addrs: Vec<IpAddr> = network.ip_networks().iter()
             .map(|ip| ip.addr).collect();
 
-        addrs.sort_by(|a, b|
-            if a.is_ipv4() && b.is_ipv6() { Ordering::Less }
-            else if b.is_ipv6() && a.is_ipv4() { Ordering::Greater }
-            else { Ordering::Equal }
-        );
+        addrs.sort_by_key(|ip| match ip {
+            IpAddr::V4(_) => 0,
+            IpAddr::V6(_) => 1,
+        });
 
-        if addrs.len() == 0 { None } else { Some(addrs[0].to_string()) }
+        if addrs.is_empty() { None } else { Some(addrs[0].to_string()) }
     };
 
     // Get a list of network interfaces and sort them
@@ -149,10 +147,7 @@ pub fn get_ip_addr() -> String {
         else if nw_name.starts_with("wwan") { 2 }
         // Deprioritize VPN interfaces
         else if nw_name.starts_with("tailscale") { u32::MAX - 1 }
-        else if nw_name.starts_with("tun") { 1000 }
-        else if nw_name.starts_with("tap") { 1000 }
-        else if nw_name.starts_with("wg") { 1000 }
-        else if nw_name.starts_with("vpn") { 1000 }
+        else if nw_name.starts_with("tun") || nw_name.starts_with("tap") || nw_name.starts_with("wg") || nw_name.starts_with("vpn") { 1000 }
         // Also deprioritize NetworkManager stuff a bit more
         else if nw_name.starts_with("nm") { 1001 }
         // Make sure loopback is last

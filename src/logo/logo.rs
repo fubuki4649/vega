@@ -1,62 +1,151 @@
-use crate::_utils::run_command::ShellReturn;
-use crate::sh;
-use std::collections::HashMap;
-use std::process::Command;
 use std::str::Lines;
-use std::sync::LazyLock;
-
-static LOGOS: LazyLock<HashMap<&'static str, &'static str>> = LazyLock::new(|| {
-    HashMap::from([
-        ("arch", include_str!("../../static/logos/sh/arch")),
-    ])
-});
 
 pub struct Logo {
+    #[allow(dead_code)]
     pub rows: u16,
     pub cols: u16,
     pub content: Lines<'static>,
 }
 
-pub fn get_logo() -> Logo {
+fn match_distro(name: &str) -> Option<&'static str> {
+    match name.to_lowercase().as_str() {
+        "almalinux" | "alma" => Some(include_str!("../../static/logos/sh/almalinux")),
+        "alpine" => Some(include_str!("../../static/logos/sh/alpine")),
+        "android" => Some(include_str!("../../static/logos/sh/android")),
+        "apple" | "macos" | "darwin" | "osx" => Some(include_str!("../../static/logos/sh/apple")),
+        "arch" | "archlinux" => Some(include_str!("../../static/logos/sh/arch")),
+        "archcraft" => Some(include_str!("../../static/logos/sh/archcraft")),
+        "arcolinux" | "arco" => Some(include_str!("../../static/logos/sh/arcolinux")),
+        "artix" => Some(include_str!("../../static/logos/sh/artix")),
+        "cachyos" | "cachy" => Some(include_str!("../../static/logos/sh/cachyos")),
+        "centos" => Some(include_str!("../../static/logos/sh/centos")),
+        "debian" => Some(include_str!("../../static/logos/sh/debian")),
+        "elementary" | "elementaryos" => Some(include_str!("../../static/logos/sh/elementary")),
+        "endeavouros" | "endeavour" => Some(include_str!("../../static/logos/sh/endeavour")),
+        "fedora" => Some(include_str!("../../static/logos/sh/fedora")),
+        "freebsd" => Some(include_str!("../../static/logos/sh/freebsd")),
+        "garuda" => Some(include_str!("../../static/logos/sh/garuda")),
+        "gentoo" => Some(include_str!("../../static/logos/sh/gentoo")),
+        "kali" | "kalilinux" => Some(include_str!("../../static/logos/sh/kali")),
+        "manjaro" => Some(include_str!("../../static/logos/sh/manjaro")),
+        "mint" | "linuxmint" => Some(include_str!("../../static/logos/sh/mint")),
+        "netbsd" => Some(include_str!("../../static/logos/sh/netbsd")),
+        "nixos" => Some(include_str!("../../static/logos/sh/nixos")),
+        "nobara" => Some(include_str!("../../static/logos/sh/nobara")),
+        "openbsd" => Some(include_str!("../../static/logos/sh/openbsd")),
+        "opensuse" | "opensuse-tumbleweed" | "opensuse-leap" | "suse" => Some(include_str!("../../static/logos/sh/opensuse")),
+        "pop" | "popos" | "pop_os" => Some(include_str!("../../static/logos/sh/popos")),
+        "rhel" | "redhat" | "redhatenterpriselinux" => Some(include_str!("../../static/logos/sh/rhel")),
+        "rocky" | "rockylinux" => Some(include_str!("../../static/logos/sh/rocky")),
+        "raspbian" | "rpi" | "raspberrypi" | "raspberrypios" => Some(include_str!("../../static/logos/sh/rpi")),
+        "slackware" => Some(include_str!("../../static/logos/sh/slackware")),
+        "solus" => Some(include_str!("../../static/logos/sh/solus")),
+        "steamos" | "holo" => Some(include_str!("../../static/logos/sh/steamos")),
+        "tux" | "linux" => Some(include_str!("../../static/logos/sh/tux")),
+        "ubuntu" => Some(include_str!("../../static/logos/sh/ubuntu")),
+        "void" | "voidlinux" => Some(include_str!("../../static/logos/sh/void")),
+        "zorin" | "zorinos" => Some(include_str!("../../static/logos/sh/zorin")),
+        _ => None,
+    }
+}
 
-    let os_distro: &str = match sh!("uname").stdout.trim() {
-        "Linux" => {
-            &sh!("awk -F= '/^ID=/ {{ gsub(/\"/, \"\", $2); print $2 }}' /etc/os-release").stdout.trim().to_owned()
-        },
-        "Darwin" => "macos",
-        "FreeBSD" => "freebsd",
-        _ => "unknown",
-    };
-
-    let mut content = match os_distro {
-        "alpine" => include_str!("../../static/logos/sh/alpine"),
-        "arch" => include_str!("../../static/logos/sh/arch"),
-        "artix" => include_str!("../../static/logos/sh/artix"),
-        "debian" => include_str!("../../static/logos/sh/debian"),
-        "endeavouros" => include_str!("../../static/logos/sh/endeavour"),
-        "fedora" => include_str!("../../static/logos/sh/fedora"),
-        "freebsd" => include_str!("../../static/logos/sh/freebsd"),
-        "gentoo" => include_str!("../../static/logos/sh/gentoo"),
-        "linuxmint" => include_str!("../../static/logos/sh/mint"),
-        "manjaro" => include_str!("../../static/logos/sh/manjaro"),
-        "macos" => include_str!("../../static/logos/sh/apple"),
-        "nixos" => include_str!("../../static/logos/sh/nixos"),
-        "nobara" => include_str!("../../static/logos/sh/nobara"),
-        "pop" => include_str!("../../static/logos/sh/popos"),
-        "raspbian" => include_str!("../../static/logos/sh/rpi"),
-        "ubuntu" => include_str!("../../static/logos/sh/ubuntu"),
-        _ => "",
-    }.lines();
-
-    let first_line = content.next().unwrap();
-    let mut logo_metadata = first_line.split_whitespace();
-    let rows = logo_metadata.next().unwrap().parse::<u16>().unwrap();
-    let cols = logo_metadata.next().unwrap().parse::<u16>().unwrap();
-    
-    Logo {
-        rows,
-        cols,
-        content,   
+fn detect_distro() -> (&'static str, Option<String>) {
+    #[cfg(target_os = "macos")]
+    {
+        return ("macos", None);
+    }
+    #[cfg(target_os = "freebsd")]
+    {
+        return ("freebsd", None);
+    }
+    #[cfg(target_os = "openbsd")]
+    {
+        return ("openbsd", None);
+    }
+    #[cfg(target_os = "netbsd")]
+    {
+        return ("netbsd", None);
     }
 
+    #[cfg(not(any(target_os = "macos", target_os = "freebsd", target_os = "openbsd", target_os = "netbsd")))]
+    {
+        if let Ok(content) = std::fs::read_to_string("/etc/os-release") {
+            let mut id = None;
+            let mut id_like = None;
+            for line in content.lines() {
+                if let Some(val) = line.strip_prefix("ID=") {
+                    id = Some(val.trim_matches('"').trim_matches('\'').trim().to_lowercase());
+                } else if let Some(val) = line.strip_prefix("ID_LIKE=") {
+                    id_like = Some(val.trim_matches('"').trim_matches('\'').trim().to_lowercase());
+                }
+            }
+            if let Some(id_str) = id {
+                return ("linux", Some(id_str));
+            }
+            if let Some(like_str) = id_like {
+                return ("linux", Some(like_str));
+            }
+        }
+
+        ("linux", None)
+    }
+}
+
+#[allow(dead_code)]
+pub fn get_logo() -> Logo {
+    get_logo_by_name(None)
+}
+
+pub fn get_logo_by_name(custom_name: Option<&str>) -> Logo {
+    let (os, detected_id) = detect_distro();
+
+    let raw_logo = if let Some(name) = custom_name {
+        match_distro(name).unwrap_or_else(|| match_distro("tux").unwrap())
+    } else if let Some(ref distro_id) = detected_id {
+        if let Some(logo) = match_distro(distro_id) {
+            logo
+        } else {
+            let mut matched = None;
+            for part in distro_id.split_whitespace() {
+                if let Some(logo) = match_distro(part) {
+                    matched = Some(logo);
+                    break;
+                }
+            }
+            matched.unwrap_or_else(|| match os {
+                "macos" => match_distro("apple").unwrap(),
+                "freebsd" => match_distro("freebsd").unwrap(),
+                "openbsd" => match_distro("openbsd").unwrap(),
+                "netbsd" => match_distro("netbsd").unwrap(),
+                _ => match_distro("tux").unwrap(),
+            })
+        }
+    } else {
+        match os {
+            "macos" => match_distro("apple").unwrap(),
+            "freebsd" => match_distro("freebsd").unwrap(),
+            "openbsd" => match_distro("openbsd").unwrap(),
+            "netbsd" => match_distro("netbsd").unwrap(),
+            _ => match_distro("tux").unwrap(),
+        }
+    };
+
+    let mut content = raw_logo.lines();
+    if let Some(first_line) = content.next() {
+        let mut logo_metadata = first_line.split_whitespace();
+        let rows = logo_metadata.next().and_then(|r| r.parse::<u16>().ok()).unwrap_or(0);
+        let cols = logo_metadata.next().and_then(|c| c.parse::<u16>().ok()).unwrap_or(0);
+
+        Logo {
+            rows,
+            cols,
+            content,
+        }
+    } else {
+        Logo {
+            rows: 0,
+            cols: 0,
+            content: "".lines(),
+        }
+    }
 }

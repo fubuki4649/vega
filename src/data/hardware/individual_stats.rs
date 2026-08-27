@@ -50,22 +50,17 @@ pub fn get_gpu() -> String {
     let info = PciInfo::enumerate_pci();
 
     if let Ok(devices) = info {
-
-        for r in devices {
-            if let Ok(device) = r {
-                // Ignores non-gpus
-                if device.device_class().unwrap_or(PciDeviceClass::Unclassified) == PciDeviceClass::DisplayController {
-
-                    // Extracts user-friendly strings for the first GPU
-                    let vendor = Vendor::from_id(device.vendor_id());
-                    if let Some(vendor) = vendor {
-                        for d in vendor.devices() {
-                            if d.id() == device.device_id() {
-                                return format!("{} {} [{:04X}:{:04X}]", vendor.name(), d.name(), device.vendor_id(), device.device_id());
-                            }
+        for device in devices.into_iter().flatten() {
+            // Ignores non-gpus
+            if device.device_class().unwrap_or(PciDeviceClass::Unclassified) == PciDeviceClass::DisplayController {
+                // Extracts user-friendly strings for the first GPU
+                let vendor = Vendor::from_id(device.vendor_id());
+                if let Some(vendor) = vendor {
+                    for d in vendor.devices() {
+                        if d.id() == device.device_id() {
+                            return format!("{} {} [{:04X}:{:04X}]", vendor.name(), d.name(), device.vendor_id(), device.device_id());
                         }
                     }
-                    
                 }
             }
         }
@@ -81,14 +76,14 @@ pub fn get_gpu() -> String {
 pub fn get_ram(sys: &mut System) -> String {
     sys.refresh_memory_specifics(MemoryRefreshKind::nothing().with_ram());
 
-    format!("{}MB / {}MB", sys.used_memory() / 1048576, sys.total_memory() / 1048576)
+    format!("{}MB / {}MB", sys.used_memory() / 1_048_576, sys.total_memory() / 1_048_576)
 }
 
 pub fn get_drive() -> String {
     let path = CString::new("/").unwrap();
     let mut stat: Statvfs = unsafe { zeroed() };
 
-    let result = unsafe { statvfs(path.as_ptr(), &mut stat) };
+    let result = unsafe { statvfs(path.as_ptr(), &raw mut stat) };
     if result != 0 {
         return "Failed / Not Supported".to_string();
     }
@@ -97,7 +92,7 @@ pub fn get_drive() -> String {
     let free_space = stat.f_bfree as u64 * stat.f_frsize as u64;
     let used_space = total_space - free_space;
 
-    format!("{}GB / {}GB", used_space / 1073741824, total_space / 1073741824)
+    format!("{}GB / {}GB", used_space / 1_073_741_824, total_space / 1_073_741_824)
 }
 
 #[cfg(target_os = "macos")]

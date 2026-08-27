@@ -4,7 +4,7 @@ pub trait SortByPriority<'a, U> {
         F: Fn(&U) -> u32;
 }
 
-impl<'a, T, U> SortByPriority<'a, U> for T
+impl<T, U> SortByPriority<'_, U> for T
 where
     T: AsMut<[U]>,
 {
@@ -12,6 +12,6 @@ where
     where
         F: Fn(&U) -> u32,
     {
-        self.as_mut().sort_by(|a, b| priority_func(a).cmp(&priority_func(b)))
+        self.as_mut().sort_by_key(|a| priority_func(a));
     }
 }

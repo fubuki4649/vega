@@ -16,22 +16,42 @@ The following build dependencies are needed:
 
 The following logos are included in `/static/logos` (more to come)
 
+- AlmaLinux
 - Alpine
-- Apple
-- Arch
+- Android
+- Apple (macOS)
+- Arch Linux
+- Archcraft
+- ArcoLinux
 - Artix
+- CachyOS
+- CentOS
 - Debian
-- Endeavour
+- elementary OS
+- EndeavourOS
 - Fedora
 - FreeBSD
+- Garuda Linux
 - Gentoo
+- Kali Linux
+- Linux (Tux generic fallback)
 - Linux Mint
 - Manjaro
+- NetBSD
 - NixOS
 - Nobara
+- OpenBSD
+- openSUSE (Leap / Tumbleweed)
 - Pop!_OS
 - Raspberry Pi OS
+- Red Hat Enterprise Linux (RHEL)
+- Rocky Linux
+- Slackware
+- Solus
+- SteamOS
 - Ubuntu
+- Void Linux
+- Zorin OS
 
 ## INSTALLATION
 

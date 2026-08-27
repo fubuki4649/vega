@@ -1,3 +1,4 @@
+#[allow(dead_code)]
 pub struct ShellReturn {
     pub err_code: u8,
     pub stdout: String,
@@ -59,6 +60,7 @@ macro_rules! sh {
             .output()
             .expect("failed to execute command");
 
+        #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
         ShellReturn {
             err_code: output.status.code().unwrap_or(1) as u8,
             stdout: String::from_utf8_lossy(&output.stdout).to_string(),
