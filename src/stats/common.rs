@@ -1,5 +1,5 @@
-use crate::data::hardware::hardware::get_hardware_info;
-use crate::data::software::software::get_software_info;
+use crate::stats::hardware::main::get_hardware_info;
+use crate::stats::software::main::get_software_info;
 use colored::Colorize;
 
 pub fn get_system_info() -> impl Iterator<Item = String> {

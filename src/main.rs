@@ -1,8 +1,8 @@
-use crate::data::common::get_system_info;
-use crate::logo::logo::get_logo_by_name;
+use crate::stats::common::get_system_info;
+use logo::get_logo_by_name;
 use std::io::{stdout, BufWriter, Write};
 
-mod data;
+mod stats;
 mod logo;
 
 fn main() {
@@ -19,7 +19,7 @@ fn main() {
                 return;
             }
             "--help" | "-h" => {
-                println!("vega - fast command line system information tool\n\nUsage: vega [OPTIONS]\n\nOptions:\n  -l, --logo <NAME>     Specify a custom logo to display\n      --list-logos      List all available logos\n  -h, --help            Print help information\n  -v, --version         Print version information");
+                println!("vega - really fast command line system information tool\n\nUsage: vega [OPTIONS]\n\nOptions:\n  -l, --logo <NAME>     Specify a custom logo to display\n      --list-logos      List all available logos\n  -h, --help            Print help information\n  -v, --version         Print version information");
                 return;
             }
             "--version" | "-v" => {

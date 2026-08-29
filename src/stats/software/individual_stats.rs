@@ -1,26 +1,32 @@
 use std::net::IpAddr;
+use std::path::Path;
 
-#[cfg(any(target_os = "macos", target_os = "freebsd"))]
-fn get_sysctl_string(name: &str) -> Option<String> {
-    let cname = std::ffi::CString::new(name).ok()?;
-    let mut size = 0;
-    unsafe {
-        libc::sysctlbyname(cname.as_ptr(), std::ptr::null_mut(), &raw mut size, std::ptr::null_mut(), 0);
-    }
-    if size == 0 { return None; }
-    let mut buf = vec![0u8; size];
-    let ret = unsafe {
-        libc::sysctlbyname(cname.as_ptr(), buf.as_mut_ptr().cast(), &raw mut size, std::ptr::null_mut(), 0)
-    };
-    if ret == 0 {
-        let len = buf.iter().position(|&c| c == 0).unwrap_or(buf.len());
-        Some(String::from_utf8_lossy(&buf[..len]).trim().to_string())
-    } else {
-        None
-    }
+/// Returns the value of an environment variable, trimmed, or `None` if unset/empty.
+fn env_var_trimmed(key: &str) -> Option<String> {
+    std::env::var(key).ok().map(|v| v.trim().to_string()).filter(|v| !v.is_empty())
 }
 
 pub fn get_os() -> String {
+    #[cfg(target_os = "macos")]
+    fn get_sysctl_string(name: &str) -> Option<String> {
+        let cname = std::ffi::CString::new(name).ok()?;
+        let mut size = 0;
+        unsafe {
+            libc::sysctlbyname(cname.as_ptr(), std::ptr::null_mut(), &raw mut size, std::ptr::null_mut(), 0);
+        }
+        if size == 0 { return None; }
+        let mut buf = vec![0u8; size];
+        let ret = unsafe {
+            libc::sysctlbyname(cname.as_ptr(), buf.as_mut_ptr().cast(), &raw mut size, std::ptr::null_mut(), 0)
+        };
+        if ret == 0 {
+            let len = buf.iter().position(|&c| c == 0).unwrap_or(buf.len());
+            Some(String::from_utf8_lossy(&buf[..len]).trim().to_string())
+        } else {
+            None
+        }
+    }
+
     #[cfg(target_os = "linux")]
     {
         if let Ok(content) = std::fs::read_to_string("/etc/os-release") {
@@ -129,137 +135,117 @@ pub fn get_uptime() -> String {
     parts.join(", ")
 }
 
-#[allow(clippy::too_many_lines)]
+/// Counts the number of directory entries directly inside `dir`.
+fn count_dirs(dir: impl AsRef<Path>) -> usize {
+    std::fs::read_dir(dir)
+        .map(|entries| entries.filter_map(Result::ok).filter(|e| e.path().is_dir()).count())
+        .unwrap_or(0)
+}
+
+/// Pacman (Arch / CachyOS / Manjaro / Endeavour / Artix / Garuda)
+fn count_pacman_packages() -> Option<String> {
+    let entries = std::fs::read_dir("/var/lib/pacman/local").ok()?;
+    let count = entries
+        .flatten()
+        .filter(|entry| entry.file_type().is_ok_and(|ft| ft.is_dir()) && entry.file_name() != "ALPM_DB_VERSION")
+        .count();
+    (count > 0).then(|| format!("{count} (pacman)"))
+}
+
+/// DPKG (Debian / Ubuntu / Mint / Pop / elementary / Kali / Zorin)
+fn count_dpkg_packages() -> Option<String> {
+    let content = std::fs::read_to_string("/var/lib/dpkg/status").ok()?;
+    let count = content.lines().filter(|l| l.starts_with("Package: ")).count();
+    (count > 0).then(|| format!("{count} (dpkg)"))
+}
+
+/// APK (Alpine)
+fn count_apk_packages() -> Option<String> {
+    let content = std::fs::read_to_string("/lib/apk/db/installed").ok()?;
+    let count = content.lines().filter(|l| l.starts_with("P:")).count();
+    (count > 0).then(|| format!("{count} (apk)"))
+}
+
+/// XBPS (Void Linux)
+fn count_xbps_packages() -> Option<String> {
+    let entries = std::fs::read_dir("/var/db/xbps").ok()?;
+    for entry in entries.flatten() {
+        let name = entry.file_name();
+        let name_str = name.to_string_lossy();
+        if name_str.starts_with("pkgdb-") && name_str.ends_with(".plist") {
+            let content = std::fs::read_to_string(entry.path()).unwrap_or_default();
+            let count = content.matches("<key>pkgver</key>").count();
+            return (count > 0).then(|| format!("{count} (xbps)"));
+        }
+    }
+    None
+}
+
+/// Portage / Gentoo (/var/db/pkg/*/*)
+fn count_emerge_packages() -> Option<String> {
+    let categories = std::fs::read_dir("/var/db/pkg").ok()?;
+    let count: usize = categories.flatten().map(|cat| count_dirs(cat.path())).sum();
+    (count > 0).then(|| format!("{count} (emerge)"))
+}
+
+/// Flatpak
+fn count_flatpak_packages() -> Option<String> {
+    let mut count = count_dirs("/var/lib/flatpak/app");
+    if let Some(home) = std::env::var_os("HOME") {
+        count += count_dirs(Path::new(&home).join(".local/share/flatpak/app"));
+    }
+    (count > 0).then(|| format!("{count} (flatpak)"))
+}
+
+/// Snap
+fn count_snap_packages() -> Option<String> {
+    let entries = std::fs::read_dir("/var/lib/snapd/snaps").ok()?;
+    let count = entries
+        .filter_map(Result::ok)
+        .filter(|e| e.file_name().to_string_lossy().ends_with(".snap"))
+        .count();
+    (count > 0).then(|| format!("{count} (snap)"))
+}
+
+/// Homebrew Cellar + Caskroom (macOS / Linux)
+fn count_brew_packages() -> Option<String> {
+    let cellar_dirs = ["/opt/homebrew/Cellar", "/usr/local/Cellar", "/home/linuxbrew/.linuxbrew/Cellar"];
+    let caskroom_dirs = ["/opt/homebrew/Caskroom", "/usr/local/Caskroom"];
+    let count: usize = cellar_dirs.iter().chain(caskroom_dirs.iter()).map(count_dirs).sum();
+    (count > 0).then(|| format!("{count} (brew)"))
+}
+
+/// MacPorts (macOS)
+fn count_macports_packages() -> Option<String> {
+    let count = count_dirs("/opt/local/var/macports/software");
+    (count > 0).then(|| format!("{count} (macports)"))
+}
+
+/// Nix (user & system profiles)
+fn count_nix_packages() -> Option<String> {
+    let home = std::env::var_os("HOME")?;
+    let nix_profile = Path::new(&home).join(".nix-profile/manifest.json");
+    let content = std::fs::read_to_string(nix_profile).unwrap_or_default();
+    let count = content.matches("\"package_attr\"").count();
+    (count > 0).then(|| format!("{count} (nix)"))
+}
+
 pub fn get_packages() -> String {
-    let mut counts: Vec<String> = Vec::new();
-
-    // Pacman (Arch / CachyOS / Manjaro / Endeavour / Artix / Garuda)
-    if let Ok(entries) = std::fs::read_dir("/var/lib/pacman/local") {
-        let mut count = 0;
-        for entry in entries.flatten() {
-            if entry.file_type().is_ok_and(|ft| ft.is_dir()) && entry.file_name() != "ALPM_DB_VERSION" {
-                count += 1;
-            }
-        }
-        if count > 0 {
-            counts.push(format!("{count} (pacman)"));
-        }
-    }
-
-    // DPKG (Debian / Ubuntu / Mint / Pop / elementary / Kali / Zorin)
-    if let Ok(content) = std::fs::read_to_string("/var/lib/dpkg/status") {
-        let count = content.lines().filter(|l| l.starts_with("Package: ")).count();
-        if count > 0 {
-            counts.push(format!("{count} (dpkg)"));
-        }
-    }
-
-    // APK (Alpine)
-    if let Ok(content) = std::fs::read_to_string("/lib/apk/db/installed") {
-        let count = content.lines().filter(|l| l.starts_with("P:")).count();
-        if count > 0 {
-            counts.push(format!("{count} (apk)"));
-        }
-    }
-
-    // XBPS (Void Linux)
-    if let Ok(entries) = std::fs::read_dir("/var/db/xbps") {
-        for entry in entries.flatten() {
-            let name = entry.file_name();
-            let name_str = name.to_string_lossy();
-            if name_str.starts_with("pkgdb-") && name_str.ends_with(".plist") {
-                if let Ok(content) = std::fs::read_to_string(entry.path()) {
-                    let count = content.matches("<key>pkgver</key>").count();
-                    if count > 0 {
-                        counts.push(format!("{count} (xbps)"));
-                    }
-                }
-                break;
-            }
-        }
-    }
-
-    // EOPKG (Solus)
-    if let Ok(entries) = std::fs::read_dir("/var/lib/eopkg/package") {
-        let count = entries.filter_map(Result::ok).filter(|e| e.path().is_dir()).count();
-        if count > 0 {
-            counts.push(format!("{count} (eopkg)"));
-        }
-    }
-
-    // Portage / Gentoo (/var/db/pkg/*/*)
-    if let Ok(categories) = std::fs::read_dir("/var/db/pkg") {
-        let mut count = 0;
-        for cat in categories.flatten() {
-            if let Ok(pkgs) = std::fs::read_dir(cat.path()) {
-                count += pkgs.filter_map(Result::ok).filter(|e| e.path().is_dir()).count();
-            }
-        }
-        if count > 0 {
-            counts.push(format!("{count} (emerge)"));
-        }
-    }
-
-    // Flatpak
-    let mut flatpak_count = 0;
-    if let Ok(entries) = std::fs::read_dir("/var/lib/flatpak/app") {
-        flatpak_count += entries.filter_map(Result::ok).filter(|e| e.path().is_dir()).count();
-    }
-    if let Some(home) = std::env::var_os("HOME") {
-        let user_flatpak = std::path::Path::new(&home).join(".local/share/flatpak/app");
-        if let Ok(entries) = std::fs::read_dir(user_flatpak) {
-            flatpak_count += entries.filter_map(Result::ok).filter(|e| e.path().is_dir()).count();
-        }
-    }
-    if flatpak_count > 0 {
-        counts.push(format!("{flatpak_count} (flatpak)"));
-    }
-
-    // Snap
-    if let Ok(entries) = std::fs::read_dir("/var/lib/snapd/snaps") {
-        let count = entries
-            .filter_map(Result::ok)
-            .filter(|e| e.file_name().to_string_lossy().ends_with(".snap"))
-            .count();
-        if count > 0 {
-            counts.push(format!("{count} (snap)"));
-        }
-    }
-
-    // Homebrew Cellar + Caskroom (macOS / Linux)
-    let mut brew_count = 0;
-    for prefix in &["/opt/homebrew/Cellar", "/usr/local/Cellar", "/home/linuxbrew/.linuxbrew/Cellar"] {
-        if let Ok(entries) = std::fs::read_dir(prefix) {
-            brew_count += entries.filter_map(Result::ok).filter(|e| e.path().is_dir()).count();
-        }
-    }
-    for prefix in &["/opt/homebrew/Caskroom", "/usr/local/Caskroom"] {
-        if let Ok(entries) = std::fs::read_dir(prefix) {
-            brew_count += entries.filter_map(Result::ok).filter(|e| e.path().is_dir()).count();
-        }
-    }
-    if brew_count > 0 {
-        counts.push(format!("{brew_count} (brew)"));
-    }
-
-    // MacPorts (macOS)
-    if let Ok(entries) = std::fs::read_dir("/opt/local/var/macports/software") {
-        let count = entries.filter_map(Result::ok).filter(|e| e.path().is_dir()).count();
-        if count > 0 {
-            counts.push(format!("{count} (macports)"));
-        }
-    }
-
-    // Nix (user & system profiles)
-    let mut nix_count = 0;
-    if let Some(home) = std::env::var_os("HOME") {
-        let nix_profile = std::path::Path::new(&home).join(".nix-profile/manifest.json");
-        let content = std::fs::read_to_string(nix_profile).unwrap_or_default();
-        nix_count += content.matches("\"package_attr\"").count();
-    }
-    if nix_count > 0 {
-        counts.push(format!("{nix_count} (nix)"));
-    }
+    let counts: Vec<String> = [
+        count_pacman_packages(),
+        count_dpkg_packages(),
+        count_apk_packages(),
+        count_xbps_packages(),
+        count_emerge_packages(),
+        count_flatpak_packages(),
+        count_snap_packages(),
+        count_brew_packages(),
+        count_macports_packages(),
+        count_nix_packages(),
+    ]
+    .into_iter()
+    .flatten()
+    .collect();
 
     if counts.is_empty() {
         "0".to_string()
@@ -269,18 +255,12 @@ pub fn get_packages() -> String {
 }
 
 pub fn get_window_manager() -> String {
-    // 1. Check environment variables
-    if let Ok(desktop) = std::env::var("XDG_CURRENT_DESKTOP") {
-        let trimmed = desktop.trim();
-        if !trimmed.is_empty() {
-            return trimmed.to_string();
-        }
+    // Check environment variables
+    if let Some(desktop) = env_var_trimmed("XDG_CURRENT_DESKTOP") {
+        return desktop;
     }
-    if let Ok(desktop) = std::env::var("DESKTOP_SESSION") {
-        let trimmed = desktop.trim();
-        if !trimmed.is_empty() {
-            return trimmed.to_string();
-        }
+    if let Some(desktop) = env_var_trimmed("DESKTOP_SESSION") {
+        return desktop;
     }
     if std::env::var("HYPRLAND_INSTANCE_SIGNATURE").is_ok() {
         return "Hyprland".to_string();
@@ -289,7 +269,7 @@ pub fn get_window_manager() -> String {
         return "Sway".to_string();
     }
 
-    // 2. Check running processes on Linux via /proc
+    // Check running processes on Linux via /proc
     #[cfg(target_os = "linux")]
     {
         const KNOWN_WMS: &[&str] = &[
@@ -369,18 +349,12 @@ pub fn get_window_manager() -> String {
 }
 
 pub fn get_terminal() -> String {
-    // 1. Check known environment variables
-    if let Ok(term) = std::env::var("TERM_PROGRAM") {
-        let trimmed = term.trim();
-        if !trimmed.is_empty() {
-            return trimmed.to_string();
-        }
+    // Check known environment variables
+    if let Some(term) = env_var_trimmed("TERM_PROGRAM") {
+        return term;
     }
-    if let Ok(term) = std::env::var("TERMINAL_EMULATOR") {
-        let trimmed = term.trim();
-        if !trimmed.is_empty() {
-            return trimmed.to_string();
-        }
+    if let Some(term) = env_var_trimmed("TERMINAL_EMULATOR") {
+        return term;
     }
     if std::env::var("KITTY_PID").is_ok() || std::env::var("KITTY_WINDOW_ID").is_ok() {
         return "kitty".to_string();
@@ -398,7 +372,7 @@ pub fn get_terminal() -> String {
         return "foot".to_string();
     }
 
-    // 2. In-process process-tree traversal on Linux via /proc
+    // In-process process-tree traversal on Linux via /proc
     #[cfg(target_os = "linux")]
     {
         let mut curr_pid = unsafe { libc::getppid() };
@@ -442,7 +416,7 @@ pub fn get_shell() -> String {
     }
 
     if let Ok(shell_path) = std::env::var("SHELL") {
-        let path = std::path::Path::new(&shell_path);
+        let path = Path::new(&shell_path);
         if let Some(name) = path.file_name() {
             return name.to_string_lossy().into_owned();
         }

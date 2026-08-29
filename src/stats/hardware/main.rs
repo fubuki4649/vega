@@ -1,5 +1,5 @@
+use crate::stats::hardware::individual_stats::{get_battery, get_cpu, get_drive, get_gpu, get_model, get_ram, get_screen_res};
 use colored::Colorize;
-use crate::data::hardware::individual_stats::{get_battery, get_cpu, get_drive, get_gpu, get_model, get_ram, get_screen_res};
 
 pub fn get_hardware_info() -> Vec<String> {
     vec![

@@ -1,4 +1,4 @@
-use crate::data::software::individual_stats::{get_ip_addr, get_kernel, get_os, get_packages, get_shell, get_terminal, get_uptime, get_window_manager};
+use crate::stats::software::individual_stats::{get_ip_addr, get_kernel, get_os, get_packages, get_shell, get_terminal, get_uptime, get_window_manager};
 use colored::Colorize;
 
 pub fn get_software_info() -> Vec<String> {

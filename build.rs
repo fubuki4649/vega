@@ -5,7 +5,6 @@ use build::unicode_insert::UnicodeInsert;
 use std::fs::{self, File};
 use std::io;
 use std::io::{BufRead, Write};
-use std::ops::Add;
 use std::path::Path;
 
 
@@ -30,12 +29,10 @@ fn main() -> anyhow::Result<()> {
     fs::create_dir_all(out_dir).expect("Failed to create output directory");
     
     for entry in fs::read_dir(in_dir)? {
-
-        // Some Initial setup stuff
         let path = entry?.path();
 
         // Skip non-files
-        if ! path.is_file() {
+        if !path.is_file() {
             continue;
         }
 
@@ -84,8 +81,8 @@ fn main() -> anyhow::Result<()> {
 
         // Write to output
         let mut out_file = File::create(&out_path)?;
-        out_file.write_all(first_line.add("\n").as_bytes())?;
-        out_file.write_all(logo.join("\n").as_bytes())?;
+        writeln!(out_file, "{first_line}")?;
+        write!(out_file, "{}", logo.join("\n"))?;
 
     }
 

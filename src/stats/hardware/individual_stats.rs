@@ -1,11 +1,11 @@
+use libc::{statvfs, statvfs as Statvfs};
 use std::ffi::CString;
 use std::mem::zeroed;
-use libc::{statvfs, statvfs as Statvfs};
+
 #[cfg(target_os = "linux")]
 use pci_ids::{FromId, Vendor};
 
 #[cfg(any(target_os = "macos", target_os = "freebsd"))]
-#[allow(dead_code)]
 fn get_sysctl_int64(name: &str) -> Option<u64> {
     let cname = CString::new(name).ok()?;
     let mut val: u64 = 0;
@@ -17,7 +17,6 @@ fn get_sysctl_int64(name: &str) -> Option<u64> {
 }
 
 #[cfg(any(target_os = "macos", target_os = "freebsd"))]
-#[allow(dead_code)]
 fn get_sysctl_string(name: &str) -> Option<String> {
     let cname = CString::new(name).ok()?;
     let mut size = 0;
@@ -38,7 +37,6 @@ fn get_sysctl_string(name: &str) -> Option<String> {
 }
 
 #[cfg(any(target_os = "macos", target_os = "freebsd"))]
-#[allow(dead_code)]
 fn get_sysctl_int(name: &str) -> Option<i32> {
     let cname = CString::new(name).ok()?;
     let mut val: i32 = 0;
@@ -296,10 +294,10 @@ pub fn get_ram() -> String {
         let total_bytes = get_sysctl_int64("hw.physmem").unwrap_or(0);
         let total_mb = total_bytes / (1024 * 1024);
 
-        let page_size = get_sysctl_int("hw.pagesize").map_or(4096u64, |v| v.cast_unsigned());
-        let page_count = get_sysctl_int("vm.stats.vm.v_page_count").map_or(0u64, |v| v.cast_unsigned());
-        let free_count = get_sysctl_int("vm.stats.vm.v_free_count").map_or(0u64, |v| v.cast_unsigned());
-        let inactive_count = get_sysctl_int("vm.stats.vm.v_inactive_count").map_or(0u64, |v| v.cast_unsigned());
+        let page_size = get_sysctl_int("hw.pagesize").map_or(4096u64, |v| u64::from(v.cast_unsigned()));
+        let page_count = get_sysctl_int("vm.stats.vm.v_page_count").map_or(0u64, |v| u64::from(v.cast_unsigned()));
+        let free_count = get_sysctl_int("vm.stats.vm.v_free_count").map_or(0u64, |v| u64::from(v.cast_unsigned()));
+        let inactive_count = get_sysctl_int("vm.stats.vm.v_inactive_count").map_or(0u64, |v| u64::from(v.cast_unsigned()));
 
         if total_mb > 0 && page_count > 0 {
             let used_pages = page_count.saturating_sub(free_count + inactive_count);
@@ -317,7 +315,11 @@ pub fn get_ram() -> String {
     }
 }
 
-#[allow(clippy::cast_lossless)]
+/// Widens a `statvfs` field (`u32` on some platforms, `u64` on others) to `u64`.
+fn widen_to_u64(value: impl Into<u64>) -> u64 {
+    value.into()
+}
+
 pub fn get_drive() -> String {
     let path = CString::new("/").unwrap();
     let mut stat: Statvfs = unsafe { zeroed() };
@@ -327,14 +329,89 @@ pub fn get_drive() -> String {
         return "Failed / Not Supported".to_string();
     }
 
-    let total_space = stat.f_blocks as u64 * stat.f_frsize as u64;
-    let free_space = stat.f_bfree as u64 * stat.f_frsize as u64;
+    let total_space = widen_to_u64(stat.f_blocks) * widen_to_u64(stat.f_frsize);
+    let free_space = widen_to_u64(stat.f_bfree) * widen_to_u64(stat.f_frsize);
     let used_space = total_space - free_space;
 
     format!("{}GB / {}GB", used_space / 1_073_741_824, total_space / 1_073_741_824)
 }
 
-#[allow(clippy::too_many_lines)]
+#[cfg(target_os = "macos")]
+fn get_battery_macos() -> String {
+    #[link(name = "IOKit", kind = "framework")]
+    unsafe extern "C" {
+        fn IOPSCopyPowerSourcesInfo() -> *const std::ffi::c_void;
+        fn IOPSCopyPowerSourcesList(blob: *const std::ffi::c_void) -> *const std::ffi::c_void;
+        fn IOPSGetPowerSourceDescription(blob: *const std::ffi::c_void, ps: *const std::ffi::c_void) -> *const std::ffi::c_void;
+        fn CFArrayGetCount(array: *const std::ffi::c_void) -> isize;
+        fn CFArrayGetValueAtIndex(array: *const std::ffi::c_void, idx: isize) -> *const std::ffi::c_void;
+        fn CFDictionaryGetValue(dict: *const std::ffi::c_void, key: *const std::ffi::c_void) -> *const std::ffi::c_void;
+        fn CFStringCreateWithCString(alloc: *const std::ffi::c_void, c_str: *const std::ffi::c_char, encoding: u32) -> *const std::ffi::c_void;
+        fn CFNumberGetValue(number: *const std::ffi::c_void, the_type: isize, value_ptr: *mut std::ffi::c_void) -> bool;
+        fn CFBooleanGetValue(boolean: *const std::ffi::c_void) -> bool;
+        fn CFRelease(cf: *const std::ffi::c_void);
+    }
+
+    unsafe {
+        let blob = IOPSCopyPowerSourcesInfo();
+        if blob.is_null() {
+            return "None".to_string();
+        }
+        let list = IOPSCopyPowerSourcesList(blob);
+        if list.is_null() {
+            CFRelease(blob);
+            return "None".to_string();
+        }
+
+        let count = CFArrayGetCount(list);
+        let mut result = None;
+
+        let k_cap = CFStringCreateWithCString(std::ptr::null(), c"Current Capacity".as_ptr(), 0x0800_0100);
+        let k_charging = CFStringCreateWithCString(std::ptr::null(), c"Is Charging".as_ptr(), 0x0800_0100);
+        let k_charged = CFStringCreateWithCString(std::ptr::null(), c"Is Charged".as_ptr(), 0x0800_0100);
+
+        for i in 0..count {
+            let ps = CFArrayGetValueAtIndex(list, i);
+            let desc = IOPSGetPowerSourceDescription(blob, ps);
+            if !desc.is_null() {
+                let cap_ref = CFDictionaryGetValue(desc, k_cap);
+                if !cap_ref.is_null() {
+                    let mut cap_val: i32 = 0;
+                    if CFNumberGetValue(cap_ref, 3, (&raw mut cap_val).cast()) {
+                        let is_charging = {
+                            let charging_ref = CFDictionaryGetValue(desc, k_charging);
+                            !charging_ref.is_null() && CFBooleanGetValue(charging_ref)
+                        };
+                        let is_charged = {
+                            let charged_ref = CFDictionaryGetValue(desc, k_charged);
+                            !charged_ref.is_null() && CFBooleanGetValue(charged_ref)
+                        };
+
+                        let state_str = if is_charged {
+                            " [Full]"
+                        } else if is_charging {
+                            " [Charging]"
+                        } else {
+                            " [Discharging]"
+                        };
+
+                        result = Some(format!("{cap_val}%{state_str}"));
+                        break;
+                    }
+                }
+            }
+        }
+
+        if !k_cap.is_null() { CFRelease(k_cap); }
+        if !k_charging.is_null() { CFRelease(k_charging); }
+        if !k_charged.is_null() { CFRelease(k_charged); }
+        CFRelease(list);
+        CFRelease(blob);
+
+        result.unwrap_or_else(|| "None".to_string())
+    }
+}
+
 pub fn get_battery() -> String {
     #[cfg(target_os = "linux")]
     {
@@ -380,78 +457,7 @@ pub fn get_battery() -> String {
     }
     #[cfg(target_os = "macos")]
     {
-        #[link(name = "IOKit", kind = "framework")]
-        unsafe extern "C" {
-            fn IOPSCopyPowerSourcesInfo() -> *const std::ffi::c_void;
-            fn IOPSCopyPowerSourcesList(blob: *const std::ffi::c_void) -> *const std::ffi::c_void;
-            fn IOPSGetPowerSourceDescription(blob: *const std::ffi::c_void, ps: *const std::ffi::c_void) -> *const std::ffi::c_void;
-            fn CFArrayGetCount(array: *const std::ffi::c_void) -> isize;
-            fn CFArrayGetValueAtIndex(array: *const std::ffi::c_void, idx: isize) -> *const std::ffi::c_void;
-            fn CFDictionaryGetValue(dict: *const std::ffi::c_void, key: *const std::ffi::c_void) -> *const std::ffi::c_void;
-            fn CFStringCreateWithCString(alloc: *const std::ffi::c_void, c_str: *const std::ffi::c_char, encoding: u32) -> *const std::ffi::c_void;
-            fn CFNumberGetValue(number: *const std::ffi::c_void, the_type: isize, value_ptr: *mut std::ffi::c_void) -> bool;
-            fn CFBooleanGetValue(boolean: *const std::ffi::c_void) -> bool;
-            fn CFRelease(cf: *const std::ffi::c_void);
-        }
-
-        unsafe {
-            let blob = IOPSCopyPowerSourcesInfo();
-            if blob.is_null() {
-                return "None".to_string();
-            }
-            let list = IOPSCopyPowerSourcesList(blob);
-            if list.is_null() {
-                CFRelease(blob);
-                return "None".to_string();
-            }
-
-            let count = CFArrayGetCount(list);
-            let mut result = None;
-
-            let k_cap = CFStringCreateWithCString(std::ptr::null(), c"Current Capacity".as_ptr(), 0x0800_0100);
-            let k_charging = CFStringCreateWithCString(std::ptr::null(), c"Is Charging".as_ptr(), 0x0800_0100);
-            let k_charged = CFStringCreateWithCString(std::ptr::null(), c"Is Charged".as_ptr(), 0x0800_0100);
-
-            for i in 0..count {
-                let ps = CFArrayGetValueAtIndex(list, i);
-                let desc = IOPSGetPowerSourceDescription(blob, ps);
-                if !desc.is_null() {
-                    let cap_ref = CFDictionaryGetValue(desc, k_cap);
-                    if !cap_ref.is_null() {
-                        let mut cap_val: i32 = 0;
-                        if CFNumberGetValue(cap_ref, 3, (&raw mut cap_val).cast()) {
-                            let is_charging = {
-                                let charging_ref = CFDictionaryGetValue(desc, k_charging);
-                                !charging_ref.is_null() && CFBooleanGetValue(charging_ref)
-                            };
-                            let is_charged = {
-                                let charged_ref = CFDictionaryGetValue(desc, k_charged);
-                                !charged_ref.is_null() && CFBooleanGetValue(charged_ref)
-                            };
-
-                            let state_str = if is_charged {
-                                " [Full]"
-                            } else if is_charging {
-                                " [Charging]"
-                            } else {
-                                " [Discharging]"
-                            };
-
-                            result = Some(format!("{cap_val}%{state_str}"));
-                            break;
-                        }
-                    }
-                }
-            }
-
-            if !k_cap.is_null() { CFRelease(k_cap); }
-            if !k_charging.is_null() { CFRelease(k_charging); }
-            if !k_charged.is_null() { CFRelease(k_charged); }
-            CFRelease(list);
-            CFRelease(blob);
-
-            result.unwrap_or_else(|| "None".to_string())
-        }
+        get_battery_macos()
     }
     #[cfg(not(any(target_os = "linux", target_os = "freebsd", target_os = "macos")))]
     {
@@ -462,7 +468,7 @@ pub fn get_battery() -> String {
 #[cfg(target_os = "macos")]
 pub fn get_screen_res() -> String {
     use core_graphics::display::CGDisplay;
-    use core_graphics::display::{CGDisplayPixelsWide, CGDisplayPixelsHigh};
+    use core_graphics::display::{CGDisplayPixelsHigh, CGDisplayPixelsWide};
     
     let screens = CGDisplay::active_displays().unwrap_or_default()
         .iter()
