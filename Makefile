@@ -11,10 +11,12 @@ build:
 	$(CARGO) build --release
 
 install: build
-	sudo cp target/release/$(BINARY_NAME) $(INSTALL_DIR)
+	sudo install -d $(INSTALL_DIR)
+	sudo install -m 755 target/release/$(BINARY_NAME) $(INSTALL_DIR)/$(BINARY_NAME)
 
 remove:
-	rm -f $(INSTALL_DIR)/$(BINARY_NAME)
+	sudo rm -f $(INSTALL_DIR)/$(BINARY_NAME)
 
 clean:
 	$(CARGO) clean
+
